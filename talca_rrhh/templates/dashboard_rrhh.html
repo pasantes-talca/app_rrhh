@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-heading"><span class="eyebrow">RECURSOS HUMANOS</span><h1>Buen día, {{ current_user.usuario }}</h1><p>Todo lo que necesitás para acompañar y gestionar al equipo.</p></header>
+<div class="row g-3">
+{% set items = [
+('empleados.index','bi-people','Empleados','Fichas y datos del equipo',''),
+('licencias.index','bi-calendar2-check','Licencias','Solicitudes y aprobaciones','green'),
+('horas_extra.index','bi-clock','Horas extra','Carga y revisión de horas','amber'),
+('noticias.index','bi-megaphone','Noticias','Comunicaciones internas','cyan'),
+('documentos.index','bi-folder2','Documentos','Carga y gestión de archivos','violet') ] %}
+{% for endpoint, icon, title, text, color in items %}
+<div class="col-sm-6 col-xl-4"><a href="{{ url_for(endpoint) }}" class="text-decoration-none"><article class="card module-card"><div class="card-body"><span class="module-icon {{ color }}"><i class="bi {{ icon }}"></i></span><h3>{{ title }}</h3><p>{{ text }}</p><i class="bi bi-arrow-right arrow"></i></div></article></a></div>
+{% endfor %}
+</div>
+{% endblock %}

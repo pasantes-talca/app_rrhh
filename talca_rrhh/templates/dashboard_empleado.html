@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="page-heading"><span class="eyebrow">MI ESPACIO</span><h1>Buen día, {{ current_user.usuario }}</h1><p>Consultá tu información, solicitudes y novedades de la empresa.</p></header>
+<div class="row g-3">
+<div class="col-sm-6 col-xl-4"><article class="card module-card"><div class="card-body"><span class="module-icon"><i class="bi bi-person"></i></span><h3>Mi información</h3><p>Datos personales y laborales</p><i class="bi bi-arrow-right arrow"></i></div></article></div>
+<div class="col-sm-6 col-xl-4"><a href="{{ url_for('licencias.index') }}" class="text-decoration-none"><article class="card module-card"><div class="card-body"><span class="module-icon green"><i class="bi bi-calendar2-check"></i></span><h3>Mis licencias</h3><p>Solicitudes y estado actual</p><i class="bi bi-arrow-right arrow"></i></div></article></a></div>
+<div class="col-sm-6 col-xl-4"><a href="{{ url_for('documentos.mis_documentos') }}" class="text-decoration-none"><article class="card module-card"><div class="card-body"><span class="module-icon violet"><i class="bi bi-folder2"></i></span><h3>Mis documentos</h3><p>Recibos y documentación</p><i class="bi bi-arrow-right arrow"></i></div></article></a></div>
+<div class="col-12"><a href="{{ url_for('noticias.muro') }}" class="text-decoration-none"><article class="card module-card announcement-card"><div class="card-body"><span class="module-icon"><i class="bi bi-megaphone"></i></span><h3>Muro de noticias</h3><p>Enterate de las últimas novedades y comunicados internos.</p><i class="bi bi-arrow-right arrow"></i></div></article></a></div>
+</div>
+{% endblock %}

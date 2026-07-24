@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Ingresar · Talca Personas{% endblock %}
+{% block auth_content %}
+<section class="login-card">
+    <div class="login-heading">
+        <span class="eyebrow">PORTAL DE PERSONAS</span>
+        <h1>Bienvenido</h1>
+        <p>Ingresá tus datos para acceder al sistema.</p>
+    </div>
+    <form method="POST" action="" class="login-form">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.usuario.label(class="form-label") }}
+            <div class="input-icon"><i class="bi bi-person"></i>{{ form.usuario(class="form-control", placeholder="Tu usuario", autocomplete="username") }}</div>
+        </div>
+        <div class="mb-4">
+            {{ form.password.label(class="form-label") }}
+            <div class="input-icon"><i class="bi bi-lock"></i>{{ form.password(class="form-control", placeholder="Tu contraseña", autocomplete="current-password") }}</div>
+        </div>
+        <div class="d-grid">{{ form.submit(class="btn btn-primary btn-lg") }}</div>
+    </form>
+</section>
+{% endblock %}

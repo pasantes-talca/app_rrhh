@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Documentos · Talca Personas{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading">
+  <div><span class="eyebrow">GESTIÓN DOCUMENTAL</span><h1>Documentos</h1><p>Administrá los archivos laborales del equipo desde un único lugar.</p></div>
+  <a href="{{ url_for('documentos.subir') }}" class="btn btn-primary"><i class="bi bi-cloud-arrow-up me-2"></i>Subir documento</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="card no-hover"><div class="card-body py-3"><small class="text-muted">Activos</small><h3 class="mb-0 mt-1">{{ resumen.activos }}</h3></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card no-hover"><div class="card-body py-3"><small class="text-muted">Compartidos</small><h3 class="mb-0 mt-1">{{ resumen.compartidos }}</h3></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card no-hover"><div class="card-body py-3"><small class="text-muted">Solo RR. HH.</small><h3 class="mb-0 mt-1">{{ resumen.privados }}</h3></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card no-hover"><div class="card-body py-3"><small class="text-muted">Archivados</small><h3 class="mb-0 mt-1">{{ resumen.archivados }}</h3></div></div></div>
+</div>
+
+<div class="card no-hover mb-3"><div class="card-body py-3">
+<form method="GET" class="row g-2 align-items-end">
+  <div class="col-lg-4"><label class="form-label">Buscar</label><input class="form-control" name="q" value="{{ request.args.get('q','') }}" placeholder="Documento, empleado o legajo"></div>
+  <div class="col-sm-6 col-lg-2"><label class="form-label">Empleado</label><select class="form-select" name="empleado_id"><option value="">Todos</option>{% for e in empleados %}<option value="{{ e.id }}" {% if request.args.get('empleado_id')|int == e.id %}selected{% endif %}>{{ e.nombre_apellido }}</option>{% endfor %}</select></div>
+  <div class="col-sm-6 col-lg-2"><label class="form-label">Tipo</label><select class="form-select" name="tipo_id"><option value="">Todos</option>{% for t in tipos %}<option value="{{ t.id }}" {% if request.args.get('tipo_id')|int == t.id %}selected{% endif %}>{{ t.nombre }}</option>{% endfor %}</select></div>
+  <div class="col-6 col-lg-1"><label class="form-label">Origen</label><select class="form-select" name="origen"><option value="">Todos</option><option value="interno" {% if request.args.get('origen')=='interno' %}selected{% endif %}>Interno</option><option value="empleado" {% if request.args.get('origen')=='empleado' %}selected{% endif %}>Empleado</option><option value="rrhh" {% if request.args.get('origen')=='rrhh' %}selected{% endif %}>RR. HH.</option></select></div>
+  <div class="col-6 col-lg-1"><label class="form-label">Acceso</label><select class="form-select" name="visibilidad"><option value="">Todos</option><option value="empleado" {% if request.args.get('visibilidad')=='empleado' %}selected{% endif %}>Empleado</option><option value="privado" {% if request.args.get('visibilidad')=='privado' %}selected{% endif %}>RR. HH.</option></select></div>
+  <div class="col-6 col-lg-1"><label class="form-label">Estado</label><select class="form-select" name="estado"><option {% if request.args.get('estado','Activo')=='Activo' %}selected{% endif %}>Activo</option><option {% if request.args.get('estado')=='Archivado' %}selected{% endif %}>Archivado</option><option value="">Todos</option></select></div>
+  <div class="col-lg-1 d-flex gap-2"><button class="btn btn-primary flex-grow-1"><i class="bi bi-search"></i></button><a class="btn btn-outline-secondary" href="{{ url_for('documentos.index') }}"><i class="bi bi-x-lg"></i></a></div>
+</form></div></div>
+
+<div class="card no-hover"><div class="table-responsive"><table class="table table-hover mb-0">
+<thead><tr><th>Documento</th><th>Empleado</th><th>Tipo</th><th>Fecha</th><th>Acceso</th><th class="text-end">Acciones</th></tr></thead>
+<tbody>{% for doc in documentos %}<tr>
+  <td><a class="fw-semibold text-decoration-none text-dark" href="{{ url_for('documentos.detalle', id=doc.id) }}"><i class="bi bi-file-earmark-text text-primary me-2"></i>{{ doc.nombre_documento }}</a><small class="d-block text-muted ms-4">{{ doc.nombre_archivo }}</small></td>
+  <td>{% if doc.empleado %}<span class="fw-medium">{{ doc.empleado.nombre_apellido }}</span><small class="d-block text-muted">Legajo {{ doc.empleado.legajo or '-' }}{% if doc.cargador and doc.cargador.rol.nombre == 'empleado' %} · Enviado por el empleado{% endif %}</small>{% else %}<span class="badge bg-primary-subtle text-primary">Interno RR. HH.</span><small class="d-block text-muted mt-1">Sin empleado asociado</small>{% endif %}</td>
+  <td>{{ doc.tipo_documento.nombre if doc.tipo_documento else '-' }}</td><td>{{ doc.creado_en.strftime('%d/%m/%Y') }}</td>
+  <td>{% if doc.visible_empleado %}<span class="badge bg-success-subtle text-success">Compartido</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">Solo RR. HH.</span>{% endif %}</td>
+  <td class="text-end text-nowrap"><a href="{{ url_for('documentos.ver_archivo', id=doc.id) }}" target="_blank" class="btn btn-sm btn-outline-secondary" title="Ver"><i class="bi bi-eye"></i></a> <a href="{{ url_for('documentos.descargar', id=doc.id) }}" class="btn btn-sm btn-outline-secondary" title="Descargar"><i class="bi bi-download"></i></a> <a href="{{ url_for('documentos.editar', id=doc.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a></td>
+</tr>{% else %}<tr><td colspan="6" class="text-center py-5"><i class="bi bi-folder2-open fs-2 text-muted"></i><p class="text-muted mt-2 mb-0">No encontramos documentos con esos filtros.</p></td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% if paginacion.pages > 1 %}<nav class="mt-3"><ul class="pagination justify-content-end">{% for p in paginacion.iter_pages() %}{% if p %}<li class="page-item {% if p==paginacion.page %}active{% endif %}"><a class="page-link" href="{{ url_for('documentos.index', page=p, q=request.args.get('q',''), empleado_id=request.args.get('empleado_id',''), tipo_id=request.args.get('tipo_id',''), origen=request.args.get('origen',''), visibilidad=request.args.get('visibilidad',''), estado=request.args.get('estado','Activo')) }}">{{ p }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}</ul></nav>{% endif %}
+{% endblock %}

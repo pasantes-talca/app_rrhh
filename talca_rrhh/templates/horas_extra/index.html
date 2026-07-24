@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Horas extra · Talca Personas{% endblock %}
+{% block content %}
+{% set puede_gestionar = current_user.rol.nombre in ['administrador', 'recursos_humanos'] %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading">
+  <div><span class="eyebrow">GESTIÓN DE ASISTENCIA</span><h1>Horas extra</h1><p>Revisá, exportá y administrá los registros calculados.</p></div>
+  {% if puede_gestionar %}<div class="d-flex flex-wrap gap-2"><a href="{{ url_for('horas_extra.exportar') }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-excel me-2"></i>Generar Excel</a><a href="{{ url_for('horas_extra.upload') }}" class="btn btn-primary"><i class="bi bi-cloud-arrow-up me-2"></i>Procesar reporte</a></div>{% endif %}
+</div>
+
+{% if puede_gestionar and registros %}
+<div class="alert alert-primary d-flex flex-wrap align-items-center justify-content-between gap-3">
+  <div><i class="bi bi-info-circle me-2"></i><strong>{{ registros|length }} registros.</strong> Descargá el Excel antes de eliminar la información.</div>
+  <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#vaciarModal"><i class="bi bi-trash3 me-2"></i>Vaciar lista</button>
+</div>
+{% endif %}
+
+<form method="POST" action="{{ url_for('horas_extra.eliminar_seleccionados') }}" id="formRegistros">
+<div class="card no-hover"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+  <thead><tr>{% if puede_gestionar %}<th style="width:42px"><input class="form-check-input" type="checkbox" id="seleccionarTodos" aria-label="Seleccionar todos"></th>{% endif %}<th>Empleado</th><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Horas calculadas</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+  <tbody>{% for reg in registros %}<tr>
+    {% if puede_gestionar %}<td><input class="form-check-input registro-check" type="checkbox" name="registro_ids" value="{{ reg.id }}" aria-label="Seleccionar registro de {{ reg.empleado.nombre_apellido if reg.empleado else 'empleado' }}"></td>{% endif %}
+    <td><span class="fw-semibold">{{ reg.empleado.nombre_apellido if reg.empleado else 'Sin empleado' }}</span><small class="d-block text-muted">Legajo {{ reg.empleado.legajo if reg.empleado and reg.empleado.legajo else '-' }}</small></td>
+    <td>{{ reg.fecha.strftime('%d/%m/%Y') if reg.fecha else '-' }}</td><td>{{ reg.hora_desde.strftime('%H:%M') if reg.hora_desde else '-' }}</td><td>{{ reg.hora_hasta.strftime('%H:%M') if reg.hora_hasta else '-' }}</td><td><strong>{{ reg.cantidad_horas or 0 }}</strong> h</td>
+    <td>{% if reg.estado == 'Aprobado' %}<span class="badge bg-success-subtle text-success">Aprobado</span>{% else %}<span class="badge bg-warning-subtle text-warning-emphasis">Pendiente</span>{% endif %}</td>
+    <td class="text-end">{% if puede_gestionar and reg.estado == 'Pendiente' %}<a href="{{ url_for('horas_extra.aprobar', id=reg.id) }}" class="btn btn-sm btn-outline-success"><i class="bi bi-check-lg me-1"></i>Aprobar</a>{% endif %}</td>
+  </tr>{% else %}<tr><td colspan="{{ 8 if puede_gestionar else 7 }}" class="text-center py-5"><i class="bi bi-clock-history fs-2 text-muted"></i><p class="text-muted mt-2 mb-0">No hay registros de horas extra.</p></td></tr>{% endfor %}</tbody>
+</table></div>
+{% if puede_gestionar and registros %}<div class="card-footer bg-white d-flex justify-content-between align-items-center"><small class="text-muted" id="cantidadSeleccionada">0 seleccionados</small><button type="submit" class="btn btn-sm btn-outline-danger" id="eliminarSeleccionados" disabled onclick="return confirm('¿Eliminar los registros seleccionados? Esta acción no se puede deshacer.')"><i class="bi bi-trash me-2"></i>Eliminar seleccionados</button></div>{% endif %}
+</div></form>
+
+{% if puede_gestionar %}<div class="modal fade" id="vaciarModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0"><form method="POST" action="{{ url_for('horas_extra.vaciar') }}"><div class="modal-header"><h5 class="modal-title">Vaciar lista de horas extra</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p>Se eliminarán permanentemente los <strong>{{ registros|length }} registros</strong> que aparecen en la lista.</p><div class="alert alert-warning mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Asegurate de haber generado y guardado el Excel.</div><label class="form-label">Escribí <strong>ELIMINAR</strong> para confirmar</label><input name="confirmacion" class="form-control" autocomplete="off" required pattern="ELIMINAR"></div><div class="modal-footer"><button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger">Vaciar definitivamente</button></div></form></div></div></div>{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const all = document.getElementById('seleccionarTodos');
+  const checks = [...document.querySelectorAll('.registro-check')];
+  const button = document.getElementById('eliminarSeleccionados');
+  const label = document.getElementById('cantidadSeleccionada');
+  if (!all) return;
+  const update = () => { const n = checks.filter(c => c.checked).length; button.disabled = !n; label.textContent = `${n} seleccionado${n === 1 ? '' : 's'}`; all.checked = n === checks.length; all.indeterminate = n > 0 && n < checks.length; };
+  all.addEventListener('change', () => { checks.forEach(c => c.checked = all.checked); update(); });
+  checks.forEach(c => c.addEventListener('change', update));
+});
+</script>
+{% endblock %}

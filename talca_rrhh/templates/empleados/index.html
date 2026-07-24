@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Directorio de Empleados</h2>
+    <a href="{{ url_for('empleados.nuevo') }}" class="btn btn-primary"><i class="bi bi-person-plus-fill"></i> Nuevo Empleado</a>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Legajo</th>
+                        <th>Nombre y Apellido</th>
+                        <th>Empresa</th>
+                        <th>Sector</th>
+                        <th>Puesto</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in empleados %}
+                    <tr>
+                        <td>{{ emp.legajo or '-' }}</td>
+                        <td>
+                            <div class="fw-bold">{{ emp.nombre_apellido }}</div>
+                            <div class="text-muted small">DNI: {{ emp.dni }}</div>
+                        </td>
+                        <td>{{ emp.empresa.nombre if emp.empresa else '-' }}</td>
+                        <td>{{ emp.sector.nombre if emp.sector else '-' }}</td>
+                        <td>{{ emp.puesto.nombre if emp.puesto else '-' }}</td>
+                        <td>
+                            {% if emp.estado == 'Activo' %}
+                                <span class="badge bg-success">Activo</span>
+                            {% elif emp.estado == 'Licencia' %}
+                                <span class="badge bg-warning">Licencia</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ emp.estado }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('empleados.ver', id=emp.id) }}" class="btn btn-sm btn-outline-info" title="Ver ficha"><i class="bi bi-eye"></i></a>
+                            <a href="{{ url_for('empleados.editar', id=emp.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center py-4">No hay empleados registrados.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

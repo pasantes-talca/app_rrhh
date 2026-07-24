@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="text-primary"><i class="bi bi-folder2-open"></i> Mis Documentos</h2>
+    <p class="text-muted">Aquí puedes ver y descargar los documentos que Recursos Humanos ha compartido contigo.</p>
+</div>
+
+<div class="row">
+    {% for doc in documentos %}
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-body text-center">
+                {% if doc.tipo_documento.nombre == 'Recibo de sueldo' %}
+                <i class="bi bi-cash-stack text-success" style="font-size: 3rem;"></i>
+                {% elif doc.tipo_documento.nombre == 'Certificado laboral' %}
+                <i class="bi bi-award text-warning" style="font-size: 3rem;"></i>
+                {% else %}
+                <i class="bi bi-file-earmark-text text-secondary" style="font-size: 3rem;"></i>
+                {% endif %}
+                
+                <h5 class="card-title mt-3">{{ doc.nombre_documento }}</h5>
+                <p class="card-text text-muted mb-1">{{ doc.tipo_documento.nombre }}</p>
+                <p class="small text-muted">Subido el: {{ doc.creado_en.strftime('%d/%m/%Y') }}</p>
+            </div>
+            <div class="card-footer bg-white border-0 text-center pb-3">
+                <a href="{{ url_for('documentos.descargar', id=doc.id) }}" class="btn btn-primary">
+                    <i class="bi bi-download"></i> Descargar Archivo
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center mt-5">
+        <i class="bi bi-inbox fs-1 text-muted"></i>
+        <h4 class="text-muted mt-3">No tienes documentos disponibles</h4>
+        <p class="text-muted">Cuando Recursos Humanos te comparta un documento (como un recibo de sueldo), aparecerá aquí.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">{{ title }}</h4>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" enctype="multipart/form-data">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ form.titulo.label }}</label>
+                        {{ form.titulo(class="form-control") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ form.contenido.label }}</label>
+                        {{ form.contenido(class="form-control", rows="5") }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">{{ form.imagen.label }}</label>
+                        {{ form.imagen(class="form-control") }}
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">{{ form.estado.label }}</label>
+                            {{ form.estado(class="form-select") }}
+                        </div>
+                    </div>
+
+                    <div class="card mb-4 bg-light border-0">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Visibilidad de la Noticia</h6>
+                            <div class="form-check mb-3">
+                                {{ form.visible_todos(class="form-check-input") }}
+                                <label class="form-check-label">{{ form.visible_todos.label.text }}</label>
+                            </div>
+                            <p class="small text-muted mb-2">Si desactivas la opción anterior, puedes filtrar a quién va dirigida:</p>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label small">{{ form.empresa_id.label }}</label>
+                                    {{ form.empresa_id(class="form-select form-select-sm") }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small">{{ form.sector_id.label }}</label>
+                                    {{ form.sector_id(class="form-select form-select-sm") }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('noticias.index') }}" class="btn btn-secondary">Cancelar</a>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

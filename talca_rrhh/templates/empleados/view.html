@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Ficha de Empleado</h2>
+    <div>
+        <a href="{{ url_for('empleados.editar', id=empleado.id) }}" class="btn btn-primary me-2"><i class="bi bi-pencil"></i> Editar</a>
+        <a href="{{ url_for('empleados.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Columna Izquierda: Datos Personales -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="text-primary"><i class="bi bi-person-lines-fill me-2"></i>Datos Personales</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th class="w-40 text-muted">Nombre y Apellido</th>
+                            <td class="fw-bold">{{ empleado.nombre_apellido }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">DNI</th>
+                            <td>{{ empleado.dni }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">CUIL</th>
+                            <td>{{ empleado.cuil or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Fecha de Nacimiento</th>
+                            <td>{{ empleado.fecha_nacimiento.strftime('%d/%m/%Y') if empleado.fecha_nacimiento else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Género</th>
+                            <td>{{ empleado.genero or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Teléfono</th>
+                            <td>{{ empleado.telefono or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Correo</th>
+                            <td>{{ empleado.correo or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Domicilio</th>
+                            <td>{{ empleado.domicilio or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Provincia</th>
+                            <td>{{ empleado.provincia or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Código Postal</th>
+                            <td>{{ empleado.codigo_postal or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Licencia de Conducir</th>
+                            <td>{{ empleado.licencia_conducir or '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna Derecha: Datos Laborales -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100 border-0">
+            <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
+                <h5 class="text-primary"><i class="bi bi-briefcase-fill me-2"></i>Datos Laborales</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tbody>
+                        <tr>
+                            <th class="w-40 text-muted">Estado</th>
+                            <td>
+                                {% if empleado.estado == 'Activo' %}
+                                    <span class="badge bg-success fs-6">Activo</span>
+                                {% elif empleado.estado == 'Licencia' %}
+                                    <span class="badge bg-warning fs-6">Licencia</span>
+                                {% else %}
+                                    <span class="badge bg-secondary fs-6">{{ empleado.estado }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Legajo</th>
+                            <td>{{ empleado.legajo or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Empresa</th>
+                            <td>{{ empleado.empresa.nombre if empleado.empresa else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Sector</th>
+                            <td>{{ empleado.sector.nombre if empleado.sector else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Puesto de Trabajo</th>
+                            <td>{{ empleado.puesto.nombre if empleado.puesto else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Jornada</th>
+                            <td>{{ empleado.jornada.nombre if empleado.jornada else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Supervisor</th>
+                            <td>{{ empleado.supervisor.nombre_apellido if empleado.supervisor else '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th class="text-muted">Fecha de Ingreso</th>
+                            <td>{{ empleado.fecha_ingreso.strftime('%d/%m/%Y') if empleado.fecha_ingreso else '-' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

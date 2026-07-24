@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Gestión de Noticias</h2>
+    <a href="{{ url_for('noticias.nueva') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Redactar Nueva Noticia
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Título</th>
+                        <th>Estado</th>
+                        <th>Visibilidad</th>
+                        <th>Fecha Pub.</th>
+                        <th>Autor</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for noticia in noticias %}
+                    <tr>
+                        <td>{{ noticia.titulo }}</td>
+                        <td>
+                            {% if noticia.estado == 'Publicada' %}
+                            <span class="badge bg-success">Publicada</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Borrador</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if noticia.visible_todos %}
+                            Toda la empresa
+                            {% else %}
+                            Específico ({{ noticia.empresa.nombre if noticia.empresa else 'Todas' }} / {{ noticia.sector.nombre if noticia.sector else 'Todos' }})
+                            {% endif %}
+                        </td>
+                        <td>{{ noticia.fecha_publicacion.strftime('%d/%m/%Y %H:%M') if noticia.fecha_publicacion else '-' }}</td>
+                        <td>{{ noticia.publicador.usuario if noticia.publicador else 'Desconocido' }}</td>
+                        <td>
+                            <form action="{{ url_for('noticias.eliminar', id=noticia.id) }}" method="POST" style="display: inline;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Seguro que deseas eliminar esta noticia?');" title="Eliminar">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No hay noticias redactadas.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

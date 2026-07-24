@@ -1,0 +1,31 @@
+# Credenciales y configuración local
+.env
+*.env
+!.env.example
+
+# Entornos virtuales y Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*.pyd
+.pytest_cache/
+
+# Archivos cargados y datos privados
+uploads/
+*.db
+*.sqlite
+*.sqlite3
+
+# Archivos temporales y generados
+dashboard_output.html
+*.log
+~$*
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+.agents/
+.codex/
