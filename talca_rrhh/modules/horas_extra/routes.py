@@ -6,7 +6,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db
 from database.models import HorasExtra, Empleado
-from .forms import UploadVoetimeForm
+from .forms import UploadVoetimeForm, HorasExtraManualForm
 
 horas_extra_bp = Blueprint('horas_extra', __name__, url_prefix='/horas_extra')
 
@@ -20,7 +20,63 @@ def index():
         registros = HorasExtra.query.order_by(HorasExtra.fecha.desc()).all()
     else:
         registros = HorasExtra.query.filter_by(empleado_id=current_user.empleado_id).order_by(HorasExtra.fecha.desc()).all()
-    return render_template('horas_extra/index.html', registros=registros)
+    pendientes_manuales = sum(
+        1 for registro in registros
+        if registro.estado == 'Pendiente'
+        and registro.cargador
+        and registro.cargador.rol.nombre == 'empleado'
+    )
+    return render_template(
+        'horas_extra/index.html', registros=registros,
+        pendientes_manuales=pendientes_manuales,
+    )
+
+
+@horas_extra_bp.route('/cargar', methods=['GET', 'POST'])
+@login_required
+def cargar_manual():
+    if check_admin_or_rrhh():
+        flash('La carga manual está destinada a empleados. RR. HH. puede procesar el reporte de Voetime.', 'info')
+        return redirect(url_for('horas_extra.index'))
+    if not current_user.empleado:
+        flash('Tu usuario no tiene una ficha de empleado asociada.', 'danger')
+        return redirect(url_for('horas_extra.index'))
+
+    form = HorasExtraManualForm()
+    if form.validate_on_submit():
+        if form.fecha.data > datetime.now().date():
+            form.fecha.errors.append('La fecha no puede ser posterior a hoy.')
+        else:
+            duplicado = HorasExtra.query.filter_by(
+                empleado_id=current_user.empleado.id,
+                cargado_por=current_user.id,
+                fecha=form.fecha.data,
+            ).filter(HorasExtra.estado.in_(['Pendiente', 'Aprobado'])).first()
+            if duplicado:
+                form.fecha.errors.append('Ya enviaste horas extra para esta fecha.')
+            else:
+                registro = HorasExtra(
+                    empleado_id=current_user.empleado.id,
+                    fecha=form.fecha.data,
+                    cantidad_horas=form.cantidad_horas.data,
+                    motivo=(form.motivo.data or '').strip() or None,
+                    sector_id=current_user.empleado.sector_id,
+                    estado='Pendiente',
+                    cargado_por=current_user.id,
+                )
+                try:
+                    db.session.add(registro)
+                    db.session.commit()
+                    flash('Tus horas extra fueron enviadas a Recursos Humanos.', 'success')
+                    return redirect(url_for('horas_extra.index'))
+                except Exception:
+                    db.session.rollback()
+                    current_app.logger.exception('Error al cargar horas extra manuales')
+                    flash('No se pudo enviar la solicitud.', 'danger')
+    return render_template(
+        'horas_extra/cargar_manual.html', form=form,
+        hoy=datetime.now().date().isoformat(),
+    )
 
 @horas_extra_bp.route('/upload', methods=['GET', 'POST'])
 @login_required
@@ -212,7 +268,7 @@ def upload():
             
     return render_template('horas_extra/upload.html', form=form)
 
-@horas_extra_bp.route('/<int:id>/aprobar')
+@horas_extra_bp.route('/<int:id>/aprobar', methods=['POST'])
 @login_required
 def aprobar(id):
     if not check_admin_or_rrhh():
@@ -223,6 +279,22 @@ def aprobar(id):
     registro.estado = 'Aprobado'
     db.session.commit()
     flash('Horas extra aprobadas.', 'success')
+    return redirect(url_for('horas_extra.index'))
+
+
+@horas_extra_bp.route('/<int:id>/rechazar', methods=['POST'])
+@login_required
+def rechazar(id):
+    if not check_admin_or_rrhh():
+        flash('Acceso denegado.', 'danger')
+        return redirect(url_for('horas_extra.index'))
+    registro = HorasExtra.query.get_or_404(id)
+    registro.estado = 'Rechazado'
+    observacion = request.form.get('observacion', '').strip()
+    if observacion:
+        registro.observaciones = observacion
+    db.session.commit()
+    flash('Solicitud de horas extra rechazada.', 'success')
     return redirect(url_for('horas_extra.index'))
 
 
@@ -284,7 +356,16 @@ def exportar():
         return redirect(url_for('horas_extra.index'))
         
     # Recuperar registros pendientes o aprobados del ultimo mes (ejemplo basico)
-    registros = HorasExtra.query.order_by(HorasExtra.fecha.asc()).all()
+    todos_los_registros = HorasExtra.query.order_by(HorasExtra.fecha.asc()).all()
+    registros = [
+        registro for registro in todos_los_registros
+        if registro.estado != 'Rechazado'
+        and (
+            not registro.cargador
+            or registro.cargador.rol.nombre != 'empleado'
+            or registro.estado == 'Aprobado'
+        )
+    ]
     if not registros:
         flash('No hay registros para exportar.', 'warning')
         return redirect(url_for('horas_extra.index'))

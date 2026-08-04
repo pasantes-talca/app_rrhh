@@ -257,3 +257,50 @@ class DocumentoRRHH(db.Model):
     empleado = db.relationship('Empleado', backref=db.backref('documentos', lazy=True))
     tipo_documento = db.relationship('TipoDocumento')
     cargador = db.relationship('Usuario', foreign_keys=[cargado_por])
+
+
+class SancionDisciplinaria(db.Model):
+    __tablename__ = 'sanciones_disciplinarias'
+    __table_args__ = {'schema': 'rrhh'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    empleado_id = db.Column(db.Integer, db.ForeignKey('rrhh.empleados.id', ondelete='CASCADE'), nullable=False)
+    tipo = db.Column(db.String(50), nullable=False)
+    fecha = db.Column(db.Date, nullable=False)
+    fecha_desde = db.Column(db.Date)
+    fecha_hasta = db.Column(db.Date)
+    cantidad_dias = db.Column(db.Numeric(6, 2))
+    motivo = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text)
+    observaciones = db.Column(db.Text)
+    nombre_archivo = db.Column(db.String(255))
+    ruta_archivo = db.Column(db.Text)
+    estado = db.Column(db.String(50), default='Borrador', nullable=False)
+    notificado_en = db.Column(db.DateTime)
+    creado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'), nullable=False)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    actualizado_en = db.Column(db.DateTime, onupdate=datetime.utcnow)
+
+    empleado = db.relationship('Empleado', backref=db.backref('sanciones_disciplinarias', lazy=True))
+    creador = db.relationship('Usuario', foreign_keys=[creado_por])
+
+
+class Notificacion(db.Model):
+    __tablename__ = 'notificaciones'
+    __table_args__ = (
+        db.UniqueConstraint('usuario_id', 'referencia_tipo', 'referencia_id', name='uq_notificacion_referencia_usuario'),
+        {'schema': 'rrhh'},
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id', ondelete='CASCADE'), nullable=False)
+    titulo = db.Column(db.String(200), nullable=False)
+    mensaje = db.Column(db.Text, nullable=False)
+    tipo = db.Column(db.String(50), default='informacion', nullable=False)
+    referencia_tipo = db.Column(db.String(50))
+    referencia_id = db.Column(db.Integer)
+    leida = db.Column(db.Boolean, default=False, nullable=False)
+    leida_en = db.Column(db.DateTime)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    usuario = db.relationship('Usuario', backref=db.backref('notificaciones', lazy=True, cascade='all, delete-orphan'))

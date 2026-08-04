@@ -1,59 +1,29 @@
 {% extends "base.html" %}
-
+{% block title %}Empleados · Talca Personas{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Directorio de Empleados</h2>
-    <a href="{{ url_for('empleados.nuevo') }}" class="btn btn-primary"><i class="bi bi-person-plus-fill"></i> Nuevo Empleado</a>
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading">
+    <div><span class="eyebrow">EQUIPO</span><h1>Directorio de empleados</h1><p>{{ total_empleados }} personas registradas en el sistema.</p></div>
+    <a href="{{ url_for('empleados.nuevo') }}" class="btn btn-primary"><i class="bi bi-person-plus me-2"></i>Nuevo empleado</a>
 </div>
 
-<div class="card shadow-sm border-0">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Legajo</th>
-                        <th>Nombre y Apellido</th>
-                        <th>Empresa</th>
-                        <th>Sector</th>
-                        <th>Puesto</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for emp in empleados %}
-                    <tr>
-                        <td>{{ emp.legajo or '-' }}</td>
-                        <td>
-                            <div class="fw-bold">{{ emp.nombre_apellido }}</div>
-                            <div class="text-muted small">DNI: {{ emp.dni }}</div>
-                        </td>
-                        <td>{{ emp.empresa.nombre if emp.empresa else '-' }}</td>
-                        <td>{{ emp.sector.nombre if emp.sector else '-' }}</td>
-                        <td>{{ emp.puesto.nombre if emp.puesto else '-' }}</td>
-                        <td>
-                            {% if emp.estado == 'Activo' %}
-                                <span class="badge bg-success">Activo</span>
-                            {% elif emp.estado == 'Licencia' %}
-                                <span class="badge bg-warning">Licencia</span>
-                            {% else %}
-                                <span class="badge bg-secondary">{{ emp.estado }}</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <a href="{{ url_for('empleados.ver', id=emp.id) }}" class="btn btn-sm btn-outline-info" title="Ver ficha"><i class="bi bi-eye"></i></a>
-                            <a href="{{ url_for('empleados.editar', id=emp.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="7" class="text-center py-4">No hay empleados registrados.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+<div class="card no-hover mb-3"><div class="card-body py-3">
+    <form method="GET" action="{{ url_for('empleados.index') }}" class="employee-search-form">
+        <div class="input-icon flex-grow-1"><i class="bi bi-search"></i><input type="search" name="q" value="{{ busqueda }}" class="form-control" placeholder="Buscar por nombre, legajo, DNI o CUIL" autofocus></div>
+        <button class="btn btn-primary" type="submit">Buscar</button>
+        {% if busqueda %}<a href="{{ url_for('empleados.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Limpiar</a>{% endif %}
+    </form>
+</div></div>
+
+{% if busqueda %}<p class="search-result-copy"><strong>{{ empleados|length }}</strong> resultado{{ '' if empleados|length == 1 else 's' }} para “{{ busqueda }}”</p>{% endif %}
+
+<div class="card no-hover"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr><th>Legajo</th><th>Nombre y apellido</th><th>Empresa</th><th>Sector</th><th>Puesto</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
+    <tbody>{% for emp in empleados %}<tr>
+        <td><span class="employee-file-number">{{ emp.legajo or '-' }}</span></td>
+        <td><div class="fw-semibold">{{ emp.nombre_apellido }}</div><div class="text-muted small">DNI {{ emp.dni }}{% if emp.cuil %} · CUIL {{ emp.cuil }}{% endif %}</div></td>
+        <td>{{ emp.empresa.nombre if emp.empresa else '-' }}</td><td>{{ emp.sector.nombre if emp.sector else '-' }}</td><td>{{ emp.puesto.nombre if emp.puesto else '-' }}</td>
+        <td>{% if emp.estado == 'Activo' %}<span class="badge bg-success-subtle text-success">Activo</span>{% elif emp.estado == 'Licencia' %}<span class="badge bg-warning-subtle text-warning-emphasis">Licencia</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">{{ emp.estado }}</span>{% endif %}</td>
+        <td class="text-end text-nowrap"><a href="{{ url_for('empleados.ver', id=emp.id) }}" class="btn btn-sm btn-outline-secondary" title="Ver ficha"><i class="bi bi-eye"></i></a> <a href="{{ url_for('empleados.editar', id=emp.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a></td>
+    </tr>{% else %}<tr><td colspan="7" class="text-center py-5"><i class="bi bi-search fs-2 text-muted"></i><p class="text-muted mt-2 mb-0">No encontramos empleados que coincidan con la búsqueda.</p>{% if busqueda %}<a href="{{ url_for('empleados.index') }}" class="btn btn-sm btn-outline-primary mt-3">Ver todos los empleados</a>{% endif %}</td></tr>{% endfor %}</tbody>
+</table></div></div>
 {% endblock %}

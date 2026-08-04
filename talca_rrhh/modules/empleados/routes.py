@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request
 from flask_login import login_required, current_user
+from sqlalchemy import func, or_
 from extensions import db
 from database.models import Empleado, Empresa, Sector, Puesto, Jornada
 from .forms import EmpleadoForm
@@ -17,15 +18,31 @@ def index():
         flash('No tienes permisos para ver el listado de empleados.', 'danger')
         return redirect(url_for('dashboard.index'))
     
-    empleados = Empleado.query.all()
-    return render_template('empleados/index.html', empleados=empleados)
+    busqueda = request.args.get('q', '').strip()
+    query = Empleado.query
+    if busqueda:
+        patron = f'%{busqueda}%'
+        query = query.filter(or_(
+            Empleado.nombre_apellido.ilike(patron),
+            Empleado.legajo.ilike(patron),
+            Empleado.dni.ilike(patron),
+            Empleado.cuil.ilike(patron),
+        ))
+
+    empleados = query.order_by(func.lower(Empleado.nombre_apellido), Empleado.nombre_apellido).all()
+    return render_template(
+        'empleados/index.html',
+        empleados=empleados,
+        busqueda=busqueda,
+        total_empleados=Empleado.query.count(),
+    )
 
 def poblar_opciones_formulario(form):
-    form.empresa_id.choices = [(0, '--- Seleccionar ---')] + [(e.id, e.nombre) for e in Empresa.query.filter_by(activo=True).all()]
-    form.sector_id.choices = [(0, '--- Seleccionar ---')] + [(s.id, s.nombre) for s in Sector.query.filter_by(activo=True).all()]
-    form.puesto_id.choices = [(0, '--- Seleccionar ---')] + [(p.id, p.nombre) for p in Puesto.query.filter_by(activo=True).all()]
-    form.jornada_id.choices = [(0, '--- Seleccionar ---')] + [(j.id, j.nombre) for j in Jornada.query.filter_by(activo=True).all()]
-    form.supervisor_id.choices = [(0, '--- Ninguno ---')] + [(emp.id, emp.nombre_apellido) for emp in Empleado.query.filter_by(estado='Activo').all()]
+    form.empresa_id.choices = [(0, '--- Seleccionar ---')] + [(e.id, e.nombre) for e in Empresa.query.filter_by(activo=True).order_by(Empresa.nombre).all()]
+    form.sector_id.choices = [(0, '--- Seleccionar ---')] + [(s.id, s.nombre) for s in Sector.query.filter_by(activo=True).order_by(Sector.nombre).all()]
+    form.puesto_id.choices = [(0, '--- Seleccionar ---')] + [(p.id, p.nombre) for p in Puesto.query.filter_by(activo=True).order_by(Puesto.nombre).all()]
+    form.jornada_id.choices = [(0, '--- Seleccionar ---')] + [(j.id, j.nombre) for j in Jornada.query.filter_by(activo=True).order_by(Jornada.nombre).all()]
+    form.supervisor_id.choices = [(0, '--- Ninguno ---')] + [(emp.id, emp.nombre_apellido) for emp in Empleado.query.filter_by(estado='Activo').order_by(Empleado.nombre_apellido).all()]
 
 @empleados_bp.route('/nuevo', methods=['GET', 'POST'])
 @login_required

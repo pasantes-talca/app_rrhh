@@ -1,16 +1,3 @@
 {% extends "base.html" %}
-{% block content %}
-<header class="page-heading"><span class="eyebrow">ADMINISTRACIÓN</span><h1>Buen día, {{ current_user.usuario }}</h1><p>Gestioná el equipo y las operaciones de Recursos Humanos desde un solo lugar.</p></header>
-<div class="row g-3">
-{% set items = [
-('empleados.index','bi-people','Empleados','Altas, perfiles y datos del equipo',''),
-('licencias.index','bi-calendar2-check','Licencias','Solicitudes, estados y seguimiento','green'),
-('horas_extra.index','bi-clock','Horas extra','Carga, revisión y reportes','amber'),
-('noticias.index','bi-megaphone','Noticias','Comunicaciones internas','cyan'),
-('documentos.index','bi-folder2','Documentos','Archivos y documentación laboral','violet') ] %}
-{% for endpoint, icon, title, text, color in items %}
-<div class="col-sm-6 col-xl-4"><a href="{{ url_for(endpoint) }}" class="text-decoration-none"><article class="card module-card"><div class="card-body"><span class="module-icon {{ color }}"><i class="bi {{ icon }}"></i></span><h3>{{ title }}</h3><p>{{ text }}</p><i class="bi bi-arrow-right arrow"></i></div></article></a></div>
-{% endfor %}
-<div class="col-sm-6 col-xl-4"><article class="card module-card"><div class="card-body"><span class="module-icon slate"><i class="bi bi-sliders"></i></span><h3>Configuración</h3><p>Preferencias y tablas maestras</p><i class="bi bi-arrow-right arrow"></i></div></article></div>
-</div>
-{% endblock %}
+{% set dashboard_area = 'ADMINISTRACIÓN' %}
+{% block content %}{% include '_dashboard_gestion.html' %}{% endblock %}

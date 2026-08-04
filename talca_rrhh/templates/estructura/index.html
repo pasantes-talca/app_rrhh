@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Estructura organizacional · Talca Personas{% endblock %}
+{% block content %}
+{% set puede_editar = current_user.rol.nombre in ['administrador', 'recursos_humanos'] %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading">
+  <div><span class="eyebrow">ORGANIZACIÓN</span><h1>Estructura organizacional</h1><p>Conocé cómo se distribuyen las personas por empresa y sector.</p></div>
+  {% if puede_editar %}<a href="{{ url_for('empleados.index') }}" class="btn btn-outline-primary"><i class="bi bi-pencil-square me-2"></i>Administrar estructura</a>{% endif %}
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-xl-3"><div class="card no-hover org-stat"><div class="card-body"><i class="bi bi-people"></i><div><small>Empleados activos</small><strong>{{ resumen.empleados }}</strong></div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card no-hover org-stat"><div class="card-body"><i class="bi bi-buildings"></i><div><small>Empresas</small><strong>{{ resumen.empresas }}</strong></div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card no-hover org-stat"><div class="card-body"><i class="bi bi-grid"></i><div><small>Sectores</small><strong>{{ resumen.sectores }}</strong></div></div></div></div>
+  <div class="col-6 col-xl-3"><div class="card no-hover org-stat"><div class="card-body"><i class="bi bi-diagram-3"></i><div><small>Relaciones jerárquicas</small><strong>{{ resumen.empleados - resumen.sin_supervisor }}</strong></div></div></div></div>
+</div>
+
+{% if puede_editar and (resumen.sin_puesto or resumen.sin_supervisor) %}<div class="alert alert-warning org-data-alert"><i class="bi bi-exclamation-triangle"></i><div><strong>La estructura jerárquica todavía está incompleta</strong><p>{{ resumen.sin_puesto }} empleados no tienen puesto y {{ resumen.sin_supervisor }} no tienen supervisor asignado. La vista muestra correctamente la distribución actual por empresa y sector.</p></div><a href="{{ url_for('empleados.index') }}" class="btn btn-sm btn-outline-warning">Completar fichas</a></div>{% endif %}
+
+<div class="card no-hover mb-4"><div class="card-body py-3"><form method="GET" class="org-filters">
+  <div class="input-icon org-search"><i class="bi bi-search"></i><input type="search" class="form-control" name="q" value="{{ busqueda }}" placeholder="Buscar persona, legajo o DNI"></div>
+  <select class="form-select" name="empresa_id"><option value="">Todas las empresas</option>{% for empresa in empresas %}<option value="{{ empresa.id }}" {% if empresa_id == empresa.id %}selected{% endif %}>{{ empresa.nombre }}</option>{% endfor %}</select>
+  <select class="form-select" name="sector_id"><option value="">Todos los sectores</option>{% for sector in sectores %}<option value="{{ sector.id }}" {% if sector_id == sector.id %}selected{% endif %}>{{ sector.nombre }}</option>{% endfor %}</select>
+  <button class="btn btn-primary">Filtrar</button>{% if busqueda or empresa_id or sector_id %}<a href="{{ url_for('estructura.index') }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>{% endif %}
+</form></div></div>
+
+{% if busqueda or empresa_id or sector_id %}<p class="search-result-copy"><strong>{{ resultados }}</strong> persona{{ '' if resultados == 1 else 's' }} encontrada{{ '' if resultados == 1 else 's' }}</p>{% endif %}
+
+<div class="org-directory">
+{% for empresa_nombre, sectores_empresa in estructura.items() %}
+  <section class="org-company">
+    <header class="org-company-header"><span class="org-company-icon"><i class="bi bi-buildings"></i></span><div><span>EMPRESA</span><h2>{{ empresa_nombre }}</h2></div><span class="org-company-total">{{ sectores_empresa.values()|map('length')|sum }} personas</span></header>
+    <div class="row g-3">{% for sector_nombre, personas in sectores_empresa.items() %}<div class="col-xl-6"><article class="card no-hover org-sector h-100"><div class="card-header"><div><span class="org-sector-icon"><i class="bi bi-grid"></i></span><h3>{{ sector_nombre }}</h3></div><span>{{ personas|length }}</span></div><div class="org-people">{% for persona in personas %}<div class="org-person"><span class="org-person-avatar">{{ persona.nombre_apellido[:1] }}</span><div class="org-person-main"><strong>{{ persona.nombre_apellido }}</strong><small>{{ persona.puesto.nombre if persona.puesto else 'Puesto sin asignar' }} · Legajo {{ persona.legajo or '-' }}</small>{% if persona.supervisor %}<span>Reporta a {{ persona.supervisor.nombre_apellido }}</span>{% endif %}</div>{% if puede_editar %}<a href="{{ url_for('empleados.editar', id=persona.id) }}" title="Editar ficha"><i class="bi bi-pencil"></i></a>{% elif current_user.empleado_id == persona.id %}<a href="{{ url_for('empleados.ver', id=persona.id) }}" title="Ver mi ficha"><i class="bi bi-eye"></i></a>{% endif %}</div>{% endfor %}</div></article></div>{% endfor %}</div>
+  </section>
+{% else %}<div class="card no-hover"><div class="empty-dashboard"><i class="bi bi-diagram-3"></i><strong>No encontramos personas</strong><span>Probá cambiando los filtros de búsqueda.</span><a href="{{ url_for('estructura.index') }}" class="btn btn-sm btn-outline-primary mt-3">Ver toda la estructura</a></div></div>{% endfor %}
+</div>
+{% endblock %}

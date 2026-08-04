@@ -24,14 +24,17 @@
             <span class="nav-caption">MENÚ PRINCIPAL</span>
             <nav class="nav flex-column">
                 <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"><i class="bi bi-grid-1x2"></i><span>Inicio</span></a>
+                <a href="{{ url_for('estructura.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('estructura.') %}active{% endif %}"><i class="bi bi-diagram-3"></i><span>Estructura organizacional</span></a>
                 {% if current_user.rol.nombre in ['administrador', 'recursos_humanos'] %}
                 <a href="{{ url_for('empleados.index') }}" class="nav-link {% if 'empleados' in request.endpoint %}active{% endif %}"><i class="bi bi-people"></i><span>Empleados</span></a>
                 <a href="{{ url_for('licencias.index') }}" class="nav-link {% if 'licencias' in request.endpoint %}active{% endif %}"><i class="bi bi-calendar2-check"></i><span>Licencias</span></a>
                 <a href="{{ url_for('horas_extra.index') }}" class="nav-link {% if 'horas_extra' in request.endpoint %}active{% endif %}"><i class="bi bi-clock"></i><span>Horas extra</span></a>
+                <a href="{{ url_for('sanciones.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('sanciones.') %}active{% endif %}"><i class="bi bi-shield-exclamation"></i><span>Sanciones</span></a>
                 <a href="{{ url_for('noticias.index') }}" class="nav-link {% if 'noticias' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i><span>Noticias</span></a>
                 <a href="{{ url_for('documentos.index') }}" class="nav-link {% if 'documentos' in request.endpoint %}active{% endif %}"><i class="bi bi-folder2"></i><span>Documentos</span></a>
                 {% else %}
                 <a href="{{ url_for('licencias.index') }}" class="nav-link {% if 'licencias' in request.endpoint %}active{% endif %}"><i class="bi bi-calendar2-check"></i><span>Mis licencias</span></a>
+                <a href="{{ url_for('horas_extra.index') }}" class="nav-link {% if 'horas_extra' in request.endpoint %}active{% endif %}"><i class="bi bi-clock"></i><span>Mis horas extra</span></a>
                 <a href="{{ url_for('noticias.muro') }}" class="nav-link {% if 'noticias' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i><span>Noticias</span></a>
                 <a href="{{ url_for('documentos.mis_documentos') }}" class="nav-link {% if request.endpoint == 'documentos.mis_documentos' %}active{% endif %}"><i class="bi bi-folder2"></i><span>Mis documentos</span></a>
                 <a href="{{ url_for('documentos.enviar_rrhh') }}" class="nav-link {% if request.endpoint in ['documentos.enviar_rrhh','documentos.envios'] %}active{% endif %}"><i class="bi bi-send"></i><span>Enviar a RR. HH.</span></a>
@@ -46,6 +49,16 @@
         <header class="topbar">
             <button class="btn menu-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar"><i class="bi bi-list"></i></button>
             <div class="topbar-spacer"></div>
+            <div class="dropdown me-2">
+                <button class="notification-button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones">
+                    <i class="bi bi-bell"></i>
+                    {% if notificaciones_no_leidas %}<span>{{ notificaciones_no_leidas if notificaciones_no_leidas < 100 else '99+' }}</span>{% endif %}
+                </button>
+                <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow">
+                    <div class="notification-dropdown-head"><div><strong>Notificaciones</strong><small>{{ notificaciones_no_leidas }} sin leer</small></div><a href="{{ url_for('notificaciones.index') }}">Ver todas</a></div>
+                    {% for notificacion in notificaciones_recientes %}<form method="POST" action="{{ url_for('notificaciones.leer', id=notificacion.id) }}"><button class="notification-mini"><span class="notification-mini-icon sanction"><i class="bi bi-shield-exclamation"></i></span><span><strong>{{ notificacion.titulo }}</strong><small>{{ notificacion.mensaje|truncate(90) }}</small><em>{{ notificacion.creado_en.strftime('%d/%m/%Y %H:%M') }}</em></span></button></form>{% else %}<div class="notification-empty"><i class="bi bi-bell-slash"></i><span>No tenés notificaciones nuevas.</span></div>{% endfor %}
+                </div>
+            </div>
             <div class="dropdown">
                 <button class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
                     <span class="user-avatar">{{ current_user.usuario[:1]|upper }}</span>

@@ -16,6 +16,7 @@ uploads/
 *.db
 *.sqlite
 *.sqlite3
+*.dump
 
 # Archivos temporales y generados
 dashboard_output.html
