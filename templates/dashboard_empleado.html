@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="dashboard-welcome">
+  <div><span class="eyebrow">MI ESPACIO</span><h1>Buen día, {{ nombre }}</h1><p>{{ hoy.strftime('%A %d de %B de %Y')|capitalize }} · Todo lo importante, en un solo lugar.</p></div>
+  <a href="{{ url_for('documentos.enviar_rrhh') }}" class="btn btn-primary"><i class="bi bi-send me-2"></i>Enviar a RR. HH.</a>
+</header>
+
+<section class="dashboard-news-featured" aria-labelledby="novedades-title">
+  <div class="section-label d-flex justify-content-between align-items-end">
+    <div><span class="eyebrow">LO MÁS IMPORTANTE</span><h2 id="novedades-title">Novedades</h2><p>Últimas comunicaciones de la empresa</p></div>
+    <a href="{{ url_for('noticias.muro') }}">Ver todas las noticias <i class="bi bi-arrow-right ms-1"></i></a>
+  </div>
+  {% if noticias %}
+  {% set principal = noticias[0] %}
+  {% set adjunto_es_imagen = principal.imagen and principal.imagen.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+  <a href="{{ url_for('noticias.muro') }}" class="text-decoration-none">
+    <article class="dashboard-news-hero">
+      <div class="dashboard-news-hero-image{% if not adjunto_es_imagen %} no-image{% endif %}">
+        {% if adjunto_es_imagen %}<img src="{{ url_for('noticias.imagen', id=principal.id) }}" alt="Imagen de {{ principal.titulo }}">{% else %}<i class="bi {% if principal.imagen %}bi-file-earmark-text-fill{% else %}bi-megaphone-fill{% endif %}"></i>{% endif %}
+      </div>
+      <div class="dashboard-news-hero-content">
+        <span class="dashboard-news-meta">COMUNICADO DE RR. HH. &middot; {{ principal.fecha_publicacion.strftime('%d/%m/%Y') if principal.fecha_publicacion else 'HOY' }}</span>
+        <h3>{{ principal.titulo }}</h3>
+        <p>{{ principal.contenido|striptags|truncate(280) }}</p>
+        <span class="dashboard-news-cta">Leer noticia completa <i class="bi bi-arrow-right"></i></span>
+        {% if principal.imagen and not adjunto_es_imagen %}<span class="dashboard-news-attachment"><i class="bi bi-paperclip"></i> Incluye un archivo adjunto</span>{% endif %}
+      </div>
+    </article>
+  </a>
+  {% if noticias|length > 1 %}
+  <div class="dashboard-news-secondary-list">
+    {% for noticia in noticias[1:] %}
+    <a href="{{ url_for('noticias.muro') }}"><span><small>{{ noticia.fecha_publicacion.strftime('%d/%m/%Y') if noticia.fecha_publicacion else '' }}</small><strong>{{ noticia.titulo }}</strong></span><span>Leer también <i class="bi bi-arrow-right"></i></span></a>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% else %}
+  <div class="dashboard-news-empty"><i class="bi bi-megaphone"></i><div><strong>Sin novedades publicadas</strong><span>Las comunicaciones de la empresa aparecerán aquí.</span></div></div>
+  {% endif %}
+</section>
+
+{% if medidas_disciplinarias %}
+<section class="employee-sanctions" aria-labelledby="medidas-title">
+  <div class="employee-sanctions-heading">
+    <span class="employee-sanctions-icon"><i class="bi bi-exclamation-triangle-fill"></i></span>
+    <div>
+      <span class="eyebrow">COMUNICACIÓN DE RR. HH.</span>
+      <h2 id="medidas-title">Tenés una medida disciplinaria notificada</h2>
+      <p>Revisá a continuación la información de la medida comunicada.</p>
+    </div>
+  </div>
+  <div class="employee-sanctions-list">
+    {% for sancion in medidas_disciplinarias %}
+    <article class="employee-sanction-item">
+      <div class="employee-sanction-main">
+        <span class="badge bg-danger-subtle text-danger mb-2">{{ sancion.tipo }}</span>
+        <strong>{{ sancion.motivo }}</strong>
+        {% if sancion.descripcion %}<p>{{ sancion.descripcion }}</p>{% endif %}
+      </div>
+      <dl class="employee-sanction-data">
+        <div><dt>Fecha</dt><dd>{{ sancion.fecha.strftime('%d/%m/%Y') }}</dd></div>
+        {% if sancion.fecha_desde and sancion.fecha_hasta %}<div><dt>Período</dt><dd>{{ sancion.fecha_desde.strftime('%d/%m/%Y') }} al {{ sancion.fecha_hasta.strftime('%d/%m/%Y') }}</dd></div>{% endif %}
+        {% if sancion.cantidad_dias %}<div><dt>Duración</dt><dd>{{ sancion.cantidad_dias|float|round(2) }} día{% if sancion.cantidad_dias != 1 %}s{% endif %}</dd></div>{% endif %}
+      </dl>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="row g-3 dashboard-stats">
+  <div class="col-sm-6"><a href="{{ url_for('documentos.mis_documentos') }}" class="stat-link"><article class="card dashboard-stat no-hover"><div class="card-body"><span class="stat-icon violet"><i class="bi bi-folder2"></i></span><div><small>Documentos disponibles</small><strong>{{ documentos_disponibles }}</strong></div><i class="bi bi-arrow-up-right stat-arrow"></i></div></article></a></div>
+  <div class="col-sm-6"><a href="{{ url_for('licencias.index') }}" class="stat-link"><article class="card dashboard-stat no-hover"><div class="card-body"><span class="stat-icon green"><i class="bi bi-calendar2-check"></i></span><div><small>Licencias pendientes</small><strong>{{ licencias_pendientes }}</strong></div><i class="bi bi-arrow-up-right stat-arrow"></i></div></article></a></div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-xl-7"><section class="card no-hover dashboard-panel h-100"><div class="card-header d-flex justify-content-between align-items-center"><div><h2>Mis licencias</h2><p>Últimas solicitudes y su estado</p></div><a href="{{ url_for('licencias.index') }}">Ver todas</a></div><div class="activity-list">{% for licencia in mis_licencias %}<a href="{{ url_for('licencias.ver', id=licencia.id) }}" class="activity-row"><span class="activity-file"><i class="bi bi-calendar-event"></i></span><span class="activity-main"><strong>{{ licencia.tipo_licencia.nombre if licencia.tipo_licencia else 'Licencia' }}</strong><small>{{ licencia.fecha_desde.strftime('%d/%m/%Y') }} al {{ licencia.fecha_hasta.strftime('%d/%m/%Y') }}</small></span><span class="badge {% if licencia.estado == 'Aprobada' %}bg-success-subtle text-success{% elif licencia.estado == 'Rechazada' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning-emphasis{% endif %}">{{ licencia.estado }}</span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="empty-dashboard"><i class="bi bi-calendar2"></i><strong>Sin solicitudes</strong><span>Todavía no registraste licencias.</span><a href="{{ url_for('licencias.nueva') }}" class="btn btn-sm btn-outline-primary mt-2">Solicitar licencia</a></div>{% endfor %}</div></section></div>
+  <div class="col-xl-5"><section class="card no-hover dashboard-panel h-100"><div class="card-header d-flex justify-content-between align-items-center"><div><h2>Documentos recientes</h2><p>Archivos compartidos por RR. HH.</p></div><a href="{{ url_for('documentos.mis_documentos') }}">Ver todos</a></div><div class="activity-list">{% for doc in ultimos_documentos %}<a href="{{ url_for('documentos.detalle', id=doc.id) }}" class="activity-row"><span class="activity-file"><i class="bi bi-file-earmark-text"></i></span><span class="activity-main"><strong>{{ doc.nombre_documento }}</strong><small>{{ doc.tipo_documento.nombre if doc.tipo_documento else 'Documento' }} · {{ doc.creado_en.strftime('%d/%m/%Y') }}</small></span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="empty-dashboard"><i class="bi bi-folder2-open"></i><strong>Sin documentos</strong><span>Los documentos compartidos aparecerán aquí.</span></div>{% endfor %}</div></section></div>
+</div>
+
+{% endblock %}

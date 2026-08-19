@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Talca Personas{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo-talca.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
@@ -18,8 +19,8 @@
         </div>
         <div class="sidebar-inner">
             <a href="{{ url_for('dashboard.index') }}" class="brand">
-                <span class="brand-mark"><i class="bi bi-people-fill"></i></span>
-                <span><strong>Talca</strong><small>Gestión de personas</small></span>
+                <img src="{{ url_for('static', filename='img/logo-talca.png') }}" class="brand-logo" alt="Talca">
+                <span class="brand-copy"><small>Gestión de personas</small></span>
             </a>
             <span class="nav-caption">MENÚ PRINCIPAL</span>
             <nav class="nav flex-column">
@@ -31,7 +32,8 @@
                 <a href="{{ url_for('horas_extra.index') }}" class="nav-link {% if 'horas_extra' in request.endpoint %}active{% endif %}"><i class="bi bi-clock"></i><span>Horas extra</span></a>
                 <a href="{{ url_for('sanciones.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('sanciones.') %}active{% endif %}"><i class="bi bi-shield-exclamation"></i><span>Sanciones</span></a>
                 <a href="{{ url_for('noticias.index') }}" class="nav-link {% if 'noticias' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i><span>Noticias</span></a>
-                <a href="{{ url_for('documentos.index') }}" class="nav-link {% if 'documentos' in request.endpoint %}active{% endif %}"><i class="bi bi-folder2"></i><span>Documentos</span></a>
+                <a href="{{ url_for('documentos.recibidos') }}" class="nav-link {% if request.endpoint == 'documentos.recibidos' or (request.endpoint == 'documentos.index' and request.args.get('origen') == 'empleado') %}active{% endif %}"><i class="bi bi-inbox"></i><span>Documentos recibidos</span></a>
+                <a href="{{ url_for('documentos.index') }}" class="nav-link {% if 'documentos' in request.endpoint and request.endpoint != 'documentos.recibidos' and request.args.get('origen') != 'empleado' %}active{% endif %}"><i class="bi bi-folder2"></i><span>Documentos</span></a>
                 {% else %}
                 <a href="{{ url_for('licencias.index') }}" class="nav-link {% if 'licencias' in request.endpoint %}active{% endif %}"><i class="bi bi-calendar2-check"></i><span>Mis licencias</span></a>
                 <a href="{{ url_for('horas_extra.index') }}" class="nav-link {% if 'horas_extra' in request.endpoint %}active{% endif %}"><i class="bi bi-clock"></i><span>Mis horas extra</span></a>
@@ -80,7 +82,7 @@
 </div>
 {% else %}
 <main class="auth-shell">
-    <div class="auth-brand"><span class="brand-mark"><i class="bi bi-people-fill"></i></span><span><strong>Talca</strong><small>Gestión de personas</small></span></div>
+    <div class="auth-brand"><img src="{{ url_for('static', filename='img/logo-talca.png') }}" class="brand-logo auth-logo" alt="Talca"><span class="brand-copy"><small>Gestión de personas</small></span></div>
     <div class="auth-content">
         {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}
         <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>

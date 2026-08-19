@@ -23,7 +23,9 @@
                     
                     <div class="mb-3">
                         <label class="form-label fw-bold">{{ form.imagen.label }}</label>
-                        {{ form.imagen(class="form-control") }}
+                        {{ form.imagen(class="form-control" + (' is-invalid' if form.imagen.errors else '')) }}
+                        <div class="form-text">Formatos permitidos: JPG, PNG, GIF, WEBP, PDF, Word y Excel.</div>
+                        {% for error in form.imagen.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                     </div>
                     
                     <div class="row mb-3">

@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app
+from flask import Blueprint, abort, render_template, redirect, url_for, flash, request, current_app, send_from_directory
 from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db
@@ -11,6 +11,42 @@ noticias_bp = Blueprint('noticias', __name__, url_prefix='/noticias')
 
 def check_admin_or_rrhh():
     return current_user.rol.nombre in ['administrador', 'recursos_humanos']
+
+
+def puede_ver_noticia(noticia):
+    if check_admin_or_rrhh():
+        return True
+    empleado = current_user.empleado
+    return bool(empleado and (
+        noticia.visible_todos
+        or noticia.empresa_id == empleado.empresa_id
+        or noticia.sector_id == empleado.sector_id
+    ))
+
+
+@noticias_bp.route('/<int:id>/imagen')
+@login_required
+def imagen(id):
+    noticia = Noticia.query.get_or_404(id)
+    if noticia.estado != 'Publicada' or not puede_ver_noticia(noticia):
+        abort(403)
+    if not noticia.imagen:
+        abort(404)
+    ruta = noticia.imagen
+    if not os.path.isabs(ruta):
+        ruta = os.path.join(current_app.root_path, ruta)
+    ruta = os.path.abspath(ruta)
+    carpeta_permitida = current_app.config.get('UPLOAD_FOLDER', 'uploads')
+    if not os.path.isabs(carpeta_permitida):
+        carpeta_permitida = os.path.join(current_app.root_path, carpeta_permitida)
+    carpeta_permitida = os.path.abspath(carpeta_permitida)
+    if os.path.commonpath([ruta, carpeta_permitida]) != carpeta_permitida or not os.path.isfile(ruta):
+        abort(404)
+    descargar = request.args.get('descargar', type=int) == 1
+    return send_from_directory(
+        os.path.dirname(ruta), os.path.basename(ruta),
+        as_attachment=descargar, download_name=os.path.basename(ruta),
+    )
 
 @noticias_bp.route('/')
 @login_required
@@ -61,10 +97,10 @@ def nueva():
             filename = secure_filename(f.filename)
             upload_path = os.path.join(current_app.config.get('UPLOAD_FOLDER', 'static/uploads'), 'noticias')
             os.makedirs(upload_path, exist_ok=True)
-            file_path = os.path.join(upload_path, f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}")
+            nombre_guardado = f"{datetime.now().strftime('%Y%m%d%H%M%S%f')}_{filename}"
+            file_path = os.path.join(upload_path, nombre_guardado)
             f.save(file_path)
-            # Guardamos ruta relativa para usarla en web
-            archivo_nombre = f"uploads/noticias/{datetime.now().strftime('%Y%m%d%H%M%S')}_{filename}"
+            archivo_nombre = os.path.relpath(file_path, current_app.root_path)
 
         noticia = Noticia(
             titulo=form.titulo.data,

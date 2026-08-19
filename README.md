@@ -9,15 +9,14 @@ Sistema interno de gestión de Recursos Humanos desarrollado con Flask y Postgre
    ```powershell
    python -m venv venv
    .\venv\Scripts\Activate.ps1
-   pip install -r talca_rrhh/requirements.txt
+   pip install -r requirements.txt
    ```
 
-2. Copiar `talca_rrhh/.env.example` como `talca_rrhh/.env` y configurar PostgreSQL.
+2. Copiar `.env.example` como `.env` y configurar PostgreSQL.
 
 3. Inicializar la base de datos:
 
    ```powershell
-   cd talca_rrhh
    python init_db.py
    ```
 

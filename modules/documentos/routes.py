@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_from_directory, abort
 from flask_login import login_required, current_user
-from sqlalchemy import or_
+from sqlalchemy import func, or_
 from werkzeug.utils import secure_filename
 
 from extensions import db
@@ -94,6 +94,34 @@ def index():
         'archivados': DocumentoRRHH.query.filter_by(estado='Archivado').count(),
     }
     return render_template('documentos/index.html', documentos=paginacion.items, paginacion=paginacion, empleados=empleados, tipos=tipos, resumen=resumen)
+
+
+@documentos_bp.route('/recibidos')
+@login_required
+def recibidos():
+    if not check_admin_or_rrhh():
+        abort(403)
+    busqueda = request.args.get('q', '').strip()
+    query = (
+        db.session.query(
+            Empleado,
+            func.count(DocumentoRRHH.id).label('cantidad_documentos'),
+            func.max(DocumentoRRHH.creado_en).label('ultimo_envio'),
+        )
+        .join(DocumentoRRHH, DocumentoRRHH.empleado_id == Empleado.id)
+        .join(Usuario, DocumentoRRHH.cargado_por == Usuario.id)
+        .join(Rol, Usuario.rol_id == Rol.id)
+        .filter(Rol.nombre == 'empleado')
+    )
+    if busqueda:
+        patron = f'%{busqueda}%'
+        query = query.filter(or_(Empleado.nombre_apellido.ilike(patron), Empleado.legajo.ilike(patron), Empleado.dni.ilike(patron)))
+    carpetas = query.group_by(Empleado.id).order_by(func.lower(Empleado.nombre_apellido)).all()
+    return render_template(
+        'documentos/recibidos.html', carpetas=carpetas,
+        total_documentos=sum(cantidad for _, cantidad, _ in carpetas),
+        busqueda=busqueda,
+    )
 
 
 @documentos_bp.route('/subir', methods=['GET', 'POST'])

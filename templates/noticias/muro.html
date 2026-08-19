@@ -10,8 +10,9 @@
     <div class="col-md-8">
         {% for noticia in noticias %}
         <div class="card shadow-sm mb-4 border-0">
-            {% if noticia.imagen %}
-            <img src="{{ url_for('static', filename=noticia.imagen.replace('uploads/', '', 1) if noticia.imagen.startswith('uploads/') else noticia.imagen) }}" class="card-img-top" alt="Imagen Noticia" style="max-height: 300px; object-fit: cover;">
+            {% set adjunto_es_imagen = noticia.imagen and noticia.imagen.lower().endswith(('.jpg', '.jpeg', '.png', '.gif', '.webp')) %}
+            {% if adjunto_es_imagen %}
+            <div class="news-wall-image"><img src="{{ url_for('noticias.imagen', id=noticia.id) }}" alt="Imagen de {{ noticia.titulo }}"></div>
             {% endif %}
             <div class="card-body p-4">
                 <h3 class="card-title">{{ noticia.titulo }}</h3>
@@ -20,6 +21,9 @@
                     | <i class="bi bi-person"></i> Publicado por RRHH
                 </h6>
                 <div class="card-text mt-3" style="white-space: pre-wrap;">{{ noticia.contenido }}</div>
+                {% if noticia.imagen %}
+                <a href="{{ url_for('noticias.imagen', id=noticia.id, descargar=1) }}" class="btn btn-outline-primary mt-3"><i class="bi bi-paperclip me-2"></i>{% if adjunto_es_imagen %}Descargar imagen{% else %}Descargar archivo adjunto{% endif %}</a>
+                {% endif %}
             </div>
             <div class="card-footer bg-light text-muted small">
                 {% if noticia.visible_todos %}

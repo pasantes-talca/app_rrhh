@@ -1,13 +1,17 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from wtforms import StringField, TextAreaField, SelectField, BooleanField, SubmitField
-from wtforms.validators import DataRequired, Length
+from wtforms.validators import DataRequired, Length, Optional
 
 class NoticiaForm(FlaskForm):
     titulo = StringField('Título de la Noticia', validators=[DataRequired(), Length(max=200)])
     contenido = TextAreaField('Contenido', validators=[DataRequired()])
-    imagen = FileField('Imagen Adjunta', validators=[
-        FileAllowed(['jpg', 'jpeg', 'png', 'gif'], 'Solo se permiten imágenes.')
+    imagen = FileField('Imagen o archivo adjunto', validators=[
+        Optional(),
+        FileAllowed(
+            ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx'],
+            'Se permiten imágenes, PDF, Word y Excel.'
+        )
     ])
     
     estado = SelectField('Estado', choices=[

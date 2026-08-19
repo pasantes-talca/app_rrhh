@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Documentos recibidos · Talca Personas{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading">
+  <div><span class="eyebrow">DOCUMENTOS ENVIADOS A RR. HH.</span><h1>Carpetas por empleado</h1><p>Cada carpeta contiene todos los documentos enviados por esa persona.</p></div>
+  <a href="{{ url_for('documentos.index') }}" class="btn btn-outline-secondary"><i class="bi bi-folder2 me-2"></i>Todos los documentos</a>
+</div>
+<div class="document-folder-summary mb-4"><span><strong>{{ carpetas|length }}</strong> empleados con envíos</span><span><strong>{{ total_documentos }}</strong> documentos recibidos</span></div>
+<form method="GET" class="card no-hover document-folder-search mb-4"><div class="card-body">
+  <label for="buscar-empleado" class="form-label">Buscar empleado</label>
+  <div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span><input id="buscar-empleado" class="form-control" name="q" value="{{ busqueda }}" placeholder="Nombre, legajo o DNI">{% if busqueda %}<a href="{{ url_for('documentos.recibidos') }}" class="btn btn-outline-secondary">Limpiar</a>{% endif %}<button class="btn btn-primary">Buscar</button></div>
+</div></form>
+<div class="row g-3 document-folders">
+{% for empleado, cantidad, ultimo_envio in carpetas %}<div class="col-md-6 col-xl-4"><a class="document-folder" href="{{ url_for('documentos.index', origen='empleado', empleado_id=empleado.id, estado='') }}">
+  <span class="document-folder-icon"><i class="bi bi-folder-fill"></i></span><span class="document-folder-main"><strong>{{ empleado.nombre_apellido }}</strong><small>Legajo {{ empleado.legajo or 'sin registrar' }}</small><span>{{ cantidad }} documento{% if cantidad != 1 %}s{% endif %} · Último envío {{ ultimo_envio.strftime('%d/%m/%Y') }}</span></span><i class="bi bi-chevron-right"></i>
+</a></div>{% else %}<div class="col-12"><div class="card no-hover"><div class="empty-dashboard"><i class="bi bi-folder2-open"></i><strong>No hay carpetas para mostrar</strong><span>{% if busqueda %}No encontramos empleados con esa búsqueda.{% else %}Las carpetas aparecerán cuando los empleados envíen documentos.{% endif %}</span></div></div></div>{% endfor %}
+</div>
+{% endblock %}

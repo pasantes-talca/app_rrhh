@@ -3,7 +3,7 @@ import os
 import csv
 
 # Agregar la ruta del proyecto al PYTHONPATH
-sys.path.append('c:\\Users\\Usuario\\Documents\\App RH\\talca_rrhh')
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app import create_app
 from extensions import db

@@ -10,8 +10,11 @@ from database.models import (
     HorasExtra,
     Licencia,
     Noticia,
+    Notificacion,
+    SancionDisciplinaria,
     Usuario,
 )
+from extensions import db
 
 dashboard_bp = Blueprint('dashboard', __name__, url_prefix='/dashboard')
 
@@ -83,7 +86,8 @@ def dashboard_empleado():
         return render_template(
             'dashboard_empleado.html', nombre=nombre_visible(), hoy=datetime.now(),
             documentos_disponibles=0, licencias_pendientes=0,
-            mis_licencias=[], ultimos_documentos=[], noticias=[]
+            mis_licencias=[], ultimos_documentos=[], noticias=[],
+            medidas_disciplinarias=[]
         )
 
     noticias_query = Noticia.query.filter_by(estado='Publicada').filter(or_(
@@ -91,6 +95,10 @@ def dashboard_empleado():
         Noticia.empresa_id == empleado.empresa_id,
         Noticia.sector_id == empleado.sector_id,
     ))
+    sanciones_notificadas = db.session.query(Notificacion.referencia_id).filter(
+        Notificacion.usuario_id == current_user.id,
+        Notificacion.referencia_tipo == 'sancion',
+    )
     return render_template(
         'dashboard_empleado.html',
         nombre=nombre_visible(),
@@ -101,13 +109,22 @@ def dashboard_empleado():
         licencias_pendientes=Licencia.query.filter_by(
             empleado_id=empleado.id, estado='Pendiente'
         ).count(),
+        medidas_disciplinarias=SancionDisciplinaria.query.filter_by(
+            estado='Notificada',
+        ).filter(or_(
+            SancionDisciplinaria.empleado_id == empleado.id,
+            SancionDisciplinaria.id.in_(sanciones_notificadas),
+        )).order_by(
+            SancionDisciplinaria.notificado_en.desc(),
+            SancionDisciplinaria.fecha.desc(),
+        ).limit(3).all(),
         mis_licencias=Licencia.query.filter_by(empleado_id=empleado.id).order_by(
             Licencia.creado_en.desc()
         ).limit(4).all(),
         ultimos_documentos=DocumentoRRHH.query.filter_by(
             empleado_id=empleado.id, visible_empleado=True, estado='Activo'
         ).order_by(DocumentoRRHH.creado_en.desc()).limit(4).all(),
-        noticias=noticias_query.order_by(Noticia.fecha_publicacion.desc()).limit(3).all(),
+        noticias=noticias_query.order_by(Noticia.fecha_publicacion.desc()).limit(2).all(),
     )
 
 
