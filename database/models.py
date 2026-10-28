@@ -98,7 +98,10 @@ class Usuario(db.Model, UserMixin):
     empleado_id = db.Column(db.Integer, db.ForeignKey('rrhh.empleados.id'))
     rol_id = db.Column(db.Integer, db.ForeignKey('rrhh.roles.id'), nullable=False)
     usuario = db.Column(db.String(100), unique=True, nullable=False)
+    nombre_mostrar = db.Column(db.String(150))
     correo = db.Column(db.String(150), unique=True)
+    foto_perfil = db.Column(db.String(255))
+    cuenta_protegida = db.Column(db.Boolean, default=False, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     activo = db.Column(db.Boolean, default=True)
     ultimo_acceso = db.Column(db.DateTime)
@@ -164,8 +167,10 @@ class Noticia(db.Model):
     titulo = db.Column(db.String(200), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
     imagen = db.Column(db.Text)
-    estado = db.Column(db.String(50), default='Borrador')
+    estado = db.Column(db.String(50), default='Publicada')
     visible_todos = db.Column(db.Boolean, default=True)
+    es_fecha_importante = db.Column(db.Boolean, default=False, nullable=False)
+    fecha_importante = db.Column(db.Date)
     empresa_id = db.Column(db.Integer, db.ForeignKey('rrhh.empresas.id'))
     sector_id = db.Column(db.Integer, db.ForeignKey('rrhh.sectores.id'))
     publicado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
@@ -259,6 +264,34 @@ class DocumentoRRHH(db.Model):
     cargador = db.relationship('Usuario', foreign_keys=[cargado_por])
 
 
+class ReciboSueldo(db.Model):
+    __tablename__ = 'recibos_sueldo'
+    __table_args__ = (
+        db.UniqueConstraint('empleado_id', 'periodo', name='uq_recibo_empleado_periodo'),
+        {'schema': 'rrhh'},
+    )
+
+    id = db.Column(db.Integer, primary_key=True)
+    documento_id = db.Column(db.Integer, db.ForeignKey('rrhh.documentos_rrhh.id', ondelete='CASCADE'), unique=True, nullable=False)
+    empleado_id = db.Column(db.Integer, db.ForeignKey('rrhh.empleados.id', ondelete='CASCADE'), nullable=False)
+    periodo = db.Column(db.String(7), nullable=False)
+    fecha_limite = db.Column(db.Date)
+    estado = db.Column(db.String(30), default='Pendiente', nullable=False)
+    visualizado_en = db.Column(db.DateTime)
+    respondido_en = db.Column(db.DateTime)
+    respuesta = db.Column(db.String(20))
+    observacion_empleado = db.Column(db.Text)
+    hash_archivo = db.Column(db.String(64), nullable=False)
+    ip_respuesta = db.Column(db.String(64))
+    agente_usuario = db.Column(db.Text)
+    publicado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'), nullable=False)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    documento = db.relationship('DocumentoRRHH', backref=db.backref('recibo_sueldo', uselist=False, cascade='all, delete-orphan'))
+    empleado = db.relationship('Empleado', backref=db.backref('recibos_sueldo', lazy=True, cascade='all, delete-orphan'))
+    publicador = db.relationship('Usuario', foreign_keys=[publicado_por])
+
+
 class SancionDisciplinaria(db.Model):
     __tablename__ = 'sanciones_disciplinarias'
     __table_args__ = {'schema': 'rrhh'}
@@ -304,3 +337,93 @@ class Notificacion(db.Model):
     creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     usuario = db.relationship('Usuario', backref=db.backref('notificaciones', lazy=True, cascade='all, delete-orphan'))
+
+
+class TareaChecklist(db.Model):
+    __tablename__ = 'tareas_checklist'
+    __table_args__ = {'schema': 'rrhh'}
+
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id', ondelete='CASCADE'), nullable=False)
+    descripcion = db.Column(db.String(250), nullable=False)
+    completada = db.Column(db.Boolean, default=False, nullable=False)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    completado_en = db.Column(db.DateTime)
+
+    usuario = db.relationship('Usuario', backref=db.backref('tareas_checklist', lazy=True, cascade='all, delete-orphan'))
+
+
+class PermisoUsuario(db.Model):
+    __tablename__ = 'permisos_usuario'
+    __table_args__ = (
+        db.UniqueConstraint('usuario_id', 'modulo', 'accion', name='uq_permiso_usuario_modulo_accion'),
+        {'schema': 'rrhh'},
+    )
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id', ondelete='CASCADE'), nullable=False)
+    modulo = db.Column(db.String(50), nullable=False)
+    accion = db.Column(db.String(30), nullable=False)
+    permitido = db.Column(db.Boolean, default=True, nullable=False)
+    asignado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+    usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref=db.backref('permisos', lazy=True, cascade='all, delete-orphan'))
+    asignador = db.relationship('Usuario', foreign_keys=[asignado_por])
+
+
+class Auditoria(db.Model):
+    __tablename__ = 'auditoria'
+    __table_args__ = {'schema': 'rrhh'}
+    id = db.Column(db.BigInteger, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    usuario_nombre = db.Column(db.String(100))
+    modulo = db.Column(db.String(60), nullable=False)
+    accion = db.Column(db.String(40), nullable=False)
+    endpoint = db.Column(db.String(150))
+    metodo = db.Column(db.String(10))
+    detalle = db.Column(db.Text)
+    ip = db.Column(db.String(64))
+    estado_http = db.Column(db.Integer)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+    usuario = db.relationship('Usuario', foreign_keys=[usuario_id])
+
+
+class ErrorSistema(db.Model):
+    __tablename__ = 'errores_sistema'
+    __table_args__ = {'schema': 'rrhh'}
+    id = db.Column(db.BigInteger, primary_key=True)
+    codigo = db.Column(db.Integer)
+    endpoint = db.Column(db.String(150))
+    metodo = db.Column(db.String(10))
+    mensaje = db.Column(db.Text, nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    ip = db.Column(db.String(64))
+    revisado = db.Column(db.Boolean, default=False, nullable=False)
+    revisado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    revisado_en = db.Column(db.DateTime)
+    motivo_revision = db.Column(db.Text)
+    creado_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, index=True)
+
+
+class ConfiguracionSistema(db.Model):
+    __tablename__ = 'configuracion_sistema'
+    __table_args__ = {'schema': 'rrhh'}
+    clave = db.Column(db.String(80), primary_key=True)
+    valor = db.Column(db.String(250), nullable=False)
+    descripcion = db.Column(db.String(250))
+    actualizado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    actualizado_en = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
+class SesionUsuario(db.Model):
+    __tablename__ = 'sesiones_usuario'
+    __table_args__ = {'schema': 'rrhh'}
+    id = db.Column(db.String(64), primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id', ondelete='CASCADE'), nullable=False)
+    ip = db.Column(db.String(64))
+    agente = db.Column(db.Text)
+    iniciada_en = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    ultima_actividad = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    cerrada_en = db.Column(db.DateTime)
+    cerrada_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    motivo_cierre = db.Column(db.String(200))
+    usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref=db.backref('sesiones', lazy=True, cascade='all, delete-orphan'))

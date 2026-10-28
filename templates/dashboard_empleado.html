@@ -5,6 +5,18 @@
   <a href="{{ url_for('documentos.enviar_rrhh') }}" class="btn btn-primary"><i class="bi bi-send me-2"></i>Enviar a RR. HH.</a>
 </header>
 
+{% if es_cumpleanos %}
+<section class="birthday-greeting" aria-label="Felicitación de cumpleaños">
+  <span class="birthday-greeting-icon"><i class="bi bi-gift-fill"></i></span>
+  <div><span class="eyebrow">UN DÍA ESPECIAL</span><h2>¡Feliz cumpleaños, {{ nombre }}!</h2><p>Todo el equipo de Talca te desea un hermoso día, lleno de alegría y buenos momentos.</p></div>
+  <span class="birthday-decoration" aria-hidden="true">✦ · ● · ✦</span>
+</section>
+{% endif %}
+
+{% include '_fecha_importante_hoy.html' %}
+
+{% if recibos_pendientes_empleado %}<a href="{{ url_for('documentos.mis_recibos') }}" class="receipt-dashboard-alert employee"><span><i class="bi bi-receipt"></i></span><div><strong>Tenés un recibo pendiente de confirmación</strong><small>Revisalo y registrá tu respuesta.</small></div><i class="bi bi-arrow-right"></i></a>{% endif %}
+
 <section class="dashboard-news-featured" aria-labelledby="novedades-title">
   <div class="section-label d-flex justify-content-between align-items-end">
     <div><span class="eyebrow">LO MÁS IMPORTANTE</span><h2 id="novedades-title">Novedades</h2><p>Últimas comunicaciones de la empresa</p></div>
@@ -35,7 +47,7 @@
   </div>
   {% endif %}
   {% else %}
-  <div class="dashboard-news-empty"><i class="bi bi-megaphone"></i><div><strong>Sin novedades publicadas</strong><span>Las comunicaciones de la empresa aparecerán aquí.</span></div></div>
+  <div class="dashboard-news-empty"><i class="bi bi-megaphone"></i><div><strong>Sin anuncios recientes</strong><span>Las noticias anteriores siguen disponibles desde “Ver todas las noticias”.</span></div></div>
   {% endif %}
 </section>
 
@@ -61,6 +73,7 @@
         <div><dt>Fecha</dt><dd>{{ sancion.fecha.strftime('%d/%m/%Y') }}</dd></div>
         {% if sancion.fecha_desde and sancion.fecha_hasta %}<div><dt>Período</dt><dd>{{ sancion.fecha_desde.strftime('%d/%m/%Y') }} al {{ sancion.fecha_hasta.strftime('%d/%m/%Y') }}</dd></div>{% endif %}
         {% if sancion.cantidad_dias %}<div><dt>Duración</dt><dd>{{ sancion.cantidad_dias|float|round(2) }} día{% if sancion.cantidad_dias != 1 %}s{% endif %}</dd></div>{% endif %}
+        {% if sancion.dias_restantes is not none %}<div class="sanction-countdown"><dt>Tiempo restante</dt><dd>{% if sancion.dias_restantes == 0 %}Finaliza hoy{% elif sancion.dias_restantes == 1 %}Queda 1 día{% else %}Quedan {{ sancion.dias_restantes }} días{% endif %}</dd></div>{% endif %}
       </dl>
     </article>
     {% endfor %}
@@ -76,6 +89,16 @@
 <div class="row g-3 mt-1">
   <div class="col-xl-7"><section class="card no-hover dashboard-panel h-100"><div class="card-header d-flex justify-content-between align-items-center"><div><h2>Mis licencias</h2><p>Últimas solicitudes y su estado</p></div><a href="{{ url_for('licencias.index') }}">Ver todas</a></div><div class="activity-list">{% for licencia in mis_licencias %}<a href="{{ url_for('licencias.ver', id=licencia.id) }}" class="activity-row"><span class="activity-file"><i class="bi bi-calendar-event"></i></span><span class="activity-main"><strong>{{ licencia.tipo_licencia.nombre if licencia.tipo_licencia else 'Licencia' }}</strong><small>{{ licencia.fecha_desde.strftime('%d/%m/%Y') }} al {{ licencia.fecha_hasta.strftime('%d/%m/%Y') }}</small></span><span class="badge {% if licencia.estado == 'Aprobada' %}bg-success-subtle text-success{% elif licencia.estado == 'Rechazada' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning-emphasis{% endif %}">{{ licencia.estado }}</span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="empty-dashboard"><i class="bi bi-calendar2"></i><strong>Sin solicitudes</strong><span>Todavía no registraste licencias.</span><a href="{{ url_for('licencias.nueva') }}" class="btn btn-sm btn-outline-primary mt-2">Solicitar licencia</a></div>{% endfor %}</div></section></div>
   <div class="col-xl-5"><section class="card no-hover dashboard-panel h-100"><div class="card-header d-flex justify-content-between align-items-center"><div><h2>Documentos recientes</h2><p>Archivos compartidos por RR. HH.</p></div><a href="{{ url_for('documentos.mis_documentos') }}">Ver todos</a></div><div class="activity-list">{% for doc in ultimos_documentos %}<a href="{{ url_for('documentos.detalle', id=doc.id) }}" class="activity-row"><span class="activity-file"><i class="bi bi-file-earmark-text"></i></span><span class="activity-main"><strong>{{ doc.nombre_documento }}</strong><small>{{ doc.tipo_documento.nombre if doc.tipo_documento else 'Documento' }} · {{ doc.creado_en.strftime('%d/%m/%Y') }}</small></span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="empty-dashboard"><i class="bi bi-folder2-open"></i><strong>Sin documentos</strong><span>Los documentos compartidos aparecerán aquí.</span></div>{% endfor %}</div></section></div>
+</div>
+
+<div class="row g-3 mt-1">
+  {% include '_proximos_cumpleanos_empleados.html' %}
+  {% include '_proximas_fechas_importantes.html' %}
+</div>
+
+<div class="dashboard-tools-grid mt-4">
+  {% include '_checklist.html' %}
+  {% include '_calendario_dashboard.html' %}
 </div>
 
 {% endblock %}

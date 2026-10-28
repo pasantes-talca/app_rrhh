@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import StringField, SelectField, BooleanField, TextAreaField, SubmitField
-from wtforms.validators import DataRequired, Length, Optional
+from wtforms import StringField, SelectField, BooleanField, TextAreaField, SubmitField, DateField
+from wtforms.validators import DataRequired, Length, Optional, Regexp
 
 
 FORMATOS_DOCUMENTO = [
@@ -23,7 +23,7 @@ class DocumentoForm(FlaskForm):
         FileRequired(),
         FileAllowed(FORMATOS_DOCUMENTO, MENSAJE_FORMATOS),
     ])
-    visible_empleado = BooleanField('Visible para el empleado', default=True)
+    visible_empleado = BooleanField('Compartir este documento con el empleado', default=False)
     observaciones = TextAreaField('Observaciones adicionales')
     submit = SubmitField('Subir documento')
 
@@ -49,3 +49,16 @@ class DocumentoEditarForm(FlaskForm):
     visible_empleado = BooleanField('Visible para el empleado')
     observaciones = TextAreaField('Observaciones adicionales')
     submit = SubmitField('Guardar cambios')
+
+
+class ReciboSueldoForm(FlaskForm):
+    empleado_id = SelectField('Empleado', coerce=int, validators=[DataRequired()])
+    periodo = StringField('Período', validators=[
+        DataRequired(), Regexp(r'^\d{4}-(0[1-9]|1[0-2])$', message='Usá el formato AAAA-MM.'),
+    ])
+    fecha_limite = DateField('Fecha límite para confirmar', validators=[Optional()])
+    archivo = FileField('Recibo en PDF', validators=[
+        FileRequired(), FileAllowed(['pdf'], 'El recibo debe ser un archivo PDF.'),
+    ])
+    observaciones = TextAreaField('Mensaje para el empleado', validators=[Optional(), Length(max=1000)])
+    submit = SubmitField('Publicar recibo')

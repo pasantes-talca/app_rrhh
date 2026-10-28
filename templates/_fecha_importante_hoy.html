@@ -1,0 +1,10 @@
+{% if fechas_importantes_hoy %}
+<section class="important-date-card" aria-label="Fecha importante de hoy">
+  <span class="important-date-icon"><i class="bi bi-calendar-event"></i></span>
+  <div>
+    <span class="eyebrow">FECHA IMPORTANTE EN MENDOZA</span>
+    {% for fecha_importante in fechas_importantes_hoy %}<h2>{{ fecha_importante.descripcion }}</h2>{% endfor %}
+    <p>Hoy acompañamos esta fecha especial. Te deseamos una excelente jornada.</p>
+  </div>
+</section>
+{% endif %}

@@ -1,0 +1,9 @@
+.birthday-greeting{position:relative;display:flex;align-items:center;gap:18px;margin:-6px 0 28px;padding:24px 28px;border:1px solid #f0d4a5;border-left:4px solid #dda01f;border-radius:14px;background:linear-gradient(105deg,#fffaf0,#fff 68%);overflow:hidden}
+.birthday-greeting-icon{width:55px;height:55px;flex:0 0 55px;border-radius:50%;display:grid;place-items:center;background:#fff0c9;color:#b97900;font-size:24px}
+.birthday-greeting>div{position:relative;z-index:1}
+.birthday-greeting .eyebrow{color:#a66c00;margin-bottom:5px}
+.birthday-greeting h2{font-size:22px;margin:0 0 5px}
+.birthday-greeting p{color:#6e6250;font-size:13px;margin:0}
+.birthday-decoration{position:absolute;right:28px;top:22px;color:#e5b957;font-size:16px;letter-spacing:7px;opacity:.7}
+.notification-mini-icon.cumpleanos,.notification-page-icon.cumpleanos{background:#fff3d6;color:#b97900}
+@media(max-width:575.98px){.birthday-greeting{align-items:flex-start;padding:20px}.birthday-greeting-icon{width:44px;height:44px;flex-basis:44px;font-size:19px}.birthday-greeting h2{font-size:18px}.birthday-decoration{display:none}}

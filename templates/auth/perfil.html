@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil · Talca Personas{% endblock %}
+{% block content %}
+<div class="profile-page">
+  <header class="profile-heading"><span class="profile-eyebrow">MI CUENTA</span><h1>Mi información personal</h1><p>Mantené tus datos actualizados para que podamos comunicarnos con vos.</p></header>
+  <form method="POST" enctype="multipart/form-data" class="profile-layout">
+    {{ form.hidden_tag() }}
+    <aside class="card profile-photo-card">
+      <div class="profile-photo" id="profilePhotoPreview">{% if current_user.foto_perfil %}<img src="{{ url_for('auth.foto_perfil') }}" alt="Tu foto de perfil">{% else %}<span>{{ (current_user.nombre_mostrar or current_user.usuario)[:1]|upper }}</span>{% endif %}</div>
+      <h2>{{ current_user.nombre_mostrar or (empleado.nombre_apellido if empleado else current_user.usuario) }}</h2>
+      <p>{{ current_user.rol.nombre|replace('_', ' ')|title }}</p>
+      <label class="btn btn-outline-primary profile-upload" for="foto"><i class="bi bi-camera"></i> Cambiar foto</label>
+      {{ form.foto(class="visually-hidden", id="foto", accept="image/jpeg,image/png,image/webp") }}
+      <small>JPG, PNG o WEBP. Máximo 5 MB.</small>
+      {% for error in form.foto.errors %}<div class="profile-error">{{ error }}</div>{% endfor %}
+      {% if current_user.foto_perfil %}<label class="profile-remove">{{ form.eliminar_foto() }} <span>Eliminar foto actual</span></label>{% endif %}
+    </aside>
+    <section class="card profile-form-card">
+      <div class="profile-section-head"><span class="profile-section-icon"><i class="bi bi-person-lines-fill"></i></span><div><h2>Datos personales</h2><p>Esta información solo puede modificarse desde tu cuenta.</p></div></div>
+      <div class="row g-3">
+        <div class="col-12">{{ form.nombre_apellido.label(class="form-label") }}{{ form.nombre_apellido(class="form-control") }}{% for error in form.nombre_apellido.errors %}<div class="profile-error">{{ error }}</div>{% endfor %}</div>
+        <div class="col-md-6">{{ form.correo.label(class="form-label") }}{{ form.correo(class="form-control", placeholder="nombre@correo.com") }}{% for error in form.correo.errors %}<div class="profile-error">{{ error }}</div>{% endfor %}</div>
+        <div class="col-md-6">{{ form.telefono.label(class="form-label") }}{{ form.telefono(class="form-control", placeholder="Tu número de contacto") }}</div>
+        <div class="col-md-6">{{ form.fecha_nacimiento.label(class="form-label") }}{{ form.fecha_nacimiento(class="form-control", type="date") }}</div>
+        <div class="col-md-6">{{ form.genero.label(class="form-label") }}{{ form.genero(class="form-select") }}</div>
+        <div class="col-12">{{ form.domicilio.label(class="form-label") }}{{ form.domicilio(class="form-control", placeholder="Calle, número y localidad") }}</div>
+        <div class="col-md-5">{{ form.provincia.label(class="form-label") }}{{ form.provincia(class="form-control") }}</div>
+        <div class="col-md-3">{{ form.codigo_postal.label(class="form-label") }}{{ form.codigo_postal(class="form-control") }}</div>
+        <div class="col-md-4">{{ form.licencia_conducir.label(class="form-label") }}{{ form.licencia_conducir(class="form-control") }}</div>
+      </div>
+      <div class="profile-section-head work-data-head"><span class="profile-section-icon neutral"><i class="bi bi-briefcase"></i></span><div><h2>Información laboral</h2><p>La administra RR. HH. para evitar cambios accidentales.</p></div></div>
+      <div class="profile-readonly-grid">
+        <div><span>Usuario</span><strong>{{ current_user.usuario }}</strong></div><div><span>Legajo</span><strong>{{ empleado.legajo if empleado and empleado.legajo else 'Sin informar' }}</strong></div>
+        <div><span>DNI</span><strong>{{ empleado.dni if empleado and empleado.dni else 'Sin informar' }}</strong></div><div><span>CUIL</span><strong>{{ empleado.cuil if empleado and empleado.cuil else 'Sin informar' }}</strong></div>
+        <div><span>Empresa</span><strong>{{ empleado.empresa.nombre if empleado and empleado.empresa else 'Sin informar' }}</strong></div><div><span>Sector</span><strong>{{ empleado.sector.nombre if empleado and empleado.sector else 'Sin informar' }}</strong></div>
+        <div><span>Puesto</span><strong>{{ empleado.puesto.nombre if empleado and empleado.puesto else 'Sin informar' }}</strong></div><div><span>Estado</span><strong>{{ empleado.estado if empleado and empleado.estado else ('Activo' if current_user.activo else 'Inactivo') }}</strong></div>
+      </div>
+      <div class="profile-actions">{{ form.submit(class="btn btn-primary") }}</div>
+    </section>
+  </form>
+</div>
+<script>
+document.getElementById('foto')?.addEventListener('change', function () {
+  const file = this.files && this.files[0]; if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('La imagen no puede superar los 5 MB.'); this.value = ''; return; }
+  const preview = document.getElementById('profilePhotoPreview'); preview.innerHTML = '';
+  const image = document.createElement('img'); image.src = URL.createObjectURL(file); image.alt = 'Vista previa de tu foto'; image.onload = () => URL.revokeObjectURL(image.src); preview.appendChild(image);
+});
+</script>
+{% endblock %}

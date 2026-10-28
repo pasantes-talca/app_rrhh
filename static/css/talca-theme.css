@@ -1,0 +1,602 @@
+/* Identidad visual Talca aplicada al portal interno. */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&display=swap');
+
+:root {
+    --primary: #e51b23;
+    --primary-dark: #bd1118;
+    --primary-soft: #fff0ef;
+    --ink: #252224;
+    --muted: #71696b;
+    --line: #eadfdd;
+    --canvas: #f8f4f1;
+    --surface: #fffdfb;
+    --sidebar: #fffdfb;
+    --sidebar-muted: #726b6c;
+    --radius: 18px;
+    --shadow: 0 2px 4px rgba(74, 35, 32, .035), 0 14px 34px rgba(74, 35, 32, .06);
+}
+
+body {
+    background:
+        radial-gradient(circle at 88% 5%, rgba(229, 27, 35, .055) 0 105px, transparent 106px),
+        radial-gradient(circle at 82% 11%, rgba(239, 178, 57, .05) 0 42px, transparent 43px),
+        var(--canvas);
+    color: var(--ink);
+    overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6,
+.brand-copy, .btn, .nav-caption {
+    font-family: Montserrat, Inter, system-ui, sans-serif;
+}
+
+h1, h2, h3 { letter-spacing: -.035em; }
+
+.sidebar {
+    background: rgba(255, 253, 251, .98);
+    border-right: 1px solid #eadfdd;
+    box-shadow: 8px 0 30px rgba(88, 43, 39, .045);
+}
+
+.sidebar-inner { padding-top: 19px; }
+.brand {
+    position: relative;
+    min-height: 78px;
+    margin: 0 0 18px;
+    padding: 8px 10px 22px;
+    border-bottom: 1px solid #f0e5e2;
+}
+.brand::after {
+    content: "";
+    position: absolute;
+    right: 4px;
+    bottom: 12px;
+    width: 28px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(229, 27, 35, .10);
+    box-shadow: -22px 5px 0 -2px rgba(239, 178, 57, .16);
+}
+.brand-logo { width: 78px; height: auto; object-fit: contain; }
+.brand-copy small {
+    color: #756b6c;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .01em;
+    white-space: nowrap;
+}
+.nav-caption { color: #9a8886; letter-spacing: .14em; }
+.sidebar .nav { gap: 4px; }
+.sidebar .nav-link {
+    min-height: 44px;
+    border-radius: 12px;
+    color: #554e50;
+    font-size: 13px;
+    transition: background .18s ease, color .18s ease, transform .18s ease;
+}
+.sidebar .nav-link:hover {
+    background: #fff3f1;
+    color: #bb171d;
+    transform: translateX(2px);
+}
+.sidebar .nav-link.active {
+    background: linear-gradient(100deg, #e51b23, #f0353b);
+    color: #fff;
+    box-shadow: 0 9px 20px rgba(229, 27, 35, .19);
+}
+.sidebar .nav-link.active::after {
+    content: "";
+    width: 5px;
+    height: 5px;
+    margin-left: auto;
+    border-radius: 50%;
+    background: #fff;
+    opacity: .85;
+}
+.sidebar-footer { border-color: #eee3e0; }
+
+.app-main { background: transparent; }
+.topbar {
+    height: 74px;
+    background: rgba(255, 253, 251, .88);
+    border-bottom-color: rgba(221, 205, 201, .8);
+    box-shadow: 0 5px 22px rgba(72, 35, 32, .035);
+}
+.main-content { padding-top: 38px; }
+
+.card,
+.dashboard-news-hero,
+.dashboard-news-secondary-list,
+.quick-actions a,
+.document-folder {
+    background: rgba(255, 253, 251, .98);
+    border-color: var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+}
+.card:not(.no-hover):hover,
+.dashboard-stat:hover {
+    border-color: #efc4c1;
+    box-shadow: 0 14px 34px rgba(116, 45, 40, .095);
+}
+
+.btn { border-radius: 12px; }
+.btn-primary {
+    background: linear-gradient(110deg, #e51b23, #f1383f);
+    border-color: #e51b23;
+    box-shadow: 0 8px 18px rgba(229, 27, 35, .16);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background: #c9151c;
+    border-color: #c9151c;
+    transform: translateY(-1px);
+}
+.btn-outline-primary { color: #cf171e; border-color: #e8aaa7; }
+.btn-outline-primary:hover { background: #e51b23; border-color: #e51b23; color: #fff; }
+.form-control:focus, .form-select:focus {
+    border-color: #e98480;
+    box-shadow: 0 0 0 4px rgba(229, 27, 35, .09);
+}
+
+.eyebrow { color: #d51a21; font-family: Montserrat, Inter, sans-serif; }
+.dashboard-welcome {
+    position: relative;
+    padding: 4px 0 4px 18px;
+}
+.dashboard-welcome::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 5px;
+    bottom: 5px;
+    width: 5px;
+    border-radius: 10px;
+    background: linear-gradient(#e51b23 0 66%, #f0ae32 66%);
+}
+.dashboard-welcome h1 { font-size: 30px; font-weight: 800; }
+.dashboard-welcome p { color: #756d6e; }
+
+.stat-icon,
+.activity-avatar,
+.activity-file,
+.module-icon,
+.org-person-avatar,
+.org-company-icon { border-radius: 14px; }
+.stat-icon.blue,
+.activity-avatar,
+.module-icon,
+.org-person-avatar { background: #fff0ef; color: #dc1b22; }
+.panel-count { background: #fff0ef; color: #d41920; }
+.stat-arrow, .quick-actions i, .news-more { color: #d91b22; }
+.dashboard-stat:hover { transform: translateY(-2px); }
+
+.dashboard-news-featured .section-label h2 { font-weight: 800; }
+.dashboard-news-hero { overflow: hidden; }
+.dashboard-news-hero-image.no-image {
+    position: relative;
+    background:
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,.24) 0 17px, transparent 18px),
+        radial-gradient(circle at 72% 68%, rgba(255,255,255,.15) 0 31px, transparent 32px),
+        linear-gradient(140deg, #bd1118, #ed2028 65%, #f25b4f);
+}
+.dashboard-news-meta, .dashboard-news-cta,
+.dashboard-news-secondary-list small,
+.dashboard-news-secondary-list a > span:last-child { color: #d41920; }
+.dashboard-news-hero h3 { font-family: Montserrat, Inter, sans-serif; font-weight: 800; }
+
+.activity-row:hover,
+.dashboard-news-secondary-list a:hover,
+.document-record-row:hover { background: #fff7f5; }
+.quick-actions a:hover { border-color: #eaa9a5; color: #c9161d; }
+
+.notification-button > span { background: #e51b23; }
+.user-avatar { background: #fff0ef; color: #d71920; border-radius: 50%; }
+.dropdown-menu { border-radius: 15px; }
+
+.calendar-day.holiday { background: #fff0ef; color: #b9161c; }
+.calendar-day.today { box-shadow: inset 0 0 0 2px #e51b23; }
+.holiday-dot { background: #e51b23; }
+
+.auth-page {
+    background:
+        radial-gradient(circle at 12% 16%, rgba(255,255,255,.2) 0 36px, transparent 37px),
+        radial-gradient(circle at 5% 28%, rgba(255,255,255,.12) 0 68px, transparent 69px),
+        linear-gradient(125deg, #bd1118 0 28%, #e51b23 28% 46%, #f8f4f1 46%);
+}
+.auth-brand { color: #fff; }
+.auth-brand .brand-copy small { color: rgba(255,255,255,.84); }
+.auth-logo { width: 104px; filter: drop-shadow(0 8px 13px rgba(78, 8, 12, .2)); }
+.login-card {
+    border: 1px solid rgba(255,255,255,.75);
+    border-radius: 24px;
+    box-shadow: 0 24px 70px rgba(72, 22, 20, .16);
+}
+.login-card::before {
+    content: "";
+    display: block;
+    width: 52px;
+    height: 6px;
+    margin: -20px 0 27px;
+    border-radius: 10px;
+    background: #e51b23;
+}
+.auth-footer { color: #756c6e; }
+
+@media (prefers-reduced-motion: no-preference) {
+    .card:not(.no-hover), .btn, .sidebar .nav-link { transition-duration: .2s; }
+}
+@media (max-width: 991.98px) {
+    .sidebar { box-shadow: 12px 0 38px rgba(68, 24, 22, .13); }
+    .main-content { padding-top: 28px; }
+}
+@media (max-width: 575.98px) {
+    .auth-page { background: linear-gradient(160deg, #e51b23 0 17%, #f8f4f1 17%); }
+    .dashboard-welcome { padding-left: 14px; }
+    .dashboard-welcome h1 { font-size: 25px; }
+    .brand-logo { width: 72px; }
+}
+
+/* Movimiento inspirado en la efervescencia de las bebidas Talca. */
+.auth-shell { position: relative; isolation: isolate; overflow: hidden; }
+.auth-shell > *:not(.talca-bubbles):not(.auth-theme-toggle) { position: relative; z-index: 2; }
+.talca-bubbles,
+.talca-app-bubbles { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.talca-bubbles i,
+.talca-app-bubbles i {
+    position: absolute;
+    bottom: -120px;
+    display: block;
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, .32);
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.42), rgba(255,255,255,.10) 35%, transparent 68%);
+    box-shadow: inset 0 0 8px rgba(255,255,255,.16), 0 5px 14px rgba(107,9,13,.08);
+    animation: talcaBubbleRise 13s linear infinite, talcaBubbleSway 3.8s ease-in-out infinite alternate;
+    opacity: 0;
+}
+.talca-bubbles i:nth-child(1){left:3%;width:78px;height:78px;animation-duration:16s;animation-delay:-8s}
+.talca-bubbles i:nth-child(2){left:11%;width:32px;height:32px;animation-duration:11s;animation-delay:-3s}
+.talca-bubbles i:nth-child(3){left:19%;width:55px;height:55px;animation-duration:14s;animation-delay:-11s}
+.talca-bubbles i:nth-child(4){left:27%;width:18px;height:18px;animation-duration:9s;animation-delay:-5s}
+.talca-bubbles i:nth-child(5){left:36%;width:42px;height:42px;animation-duration:15s;animation-delay:-1s}
+.talca-bubbles i:nth-child(6){left:7%;width:16px;height:16px;animation-duration:10s;animation-delay:-9s}
+.talca-bubbles i:nth-child(7){left:23%;width:26px;height:26px;animation-duration:12s;animation-delay:-6s}
+.talca-bubbles i:nth-child(8){left:41%;width:70px;height:70px;animation-duration:18s;animation-delay:-14s}
+.talca-bubbles i:nth-child(9){left:15%;width:12px;height:12px;animation-duration:8s;animation-delay:-2s}
+
+@keyframes talcaBubbleRise {
+    0% { transform: translate3d(0, 0, 0) scale(.72); opacity: 0; }
+    10% { opacity: .75; }
+    72% { opacity: .48; }
+    100% { transform: translate3d(22px, -118vh, 0) scale(1.08); opacity: 0; }
+}
+@keyframes talcaBubbleSway {
+    from { margin-left: -9px; }
+    to { margin-left: 13px; }
+}
+
+.talca-app-bubbles { position: absolute; left: 252px; z-index: 0; }
+.talca-app-bubbles i {
+    border-color: rgba(229,27,35,.30);
+    background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.92), rgba(229,27,35,.16) 48%, rgba(229,27,35,.045) 68%, transparent 72%);
+    box-shadow: inset 0 0 10px rgba(229,27,35,.08), 0 5px 18px rgba(141,28,33,.09);
+    animation-duration: 22s;
+}
+.talca-app-bubbles i:nth-child(1){left:58%;width:34px;height:34px;animation-delay:-6s}
+.talca-app-bubbles i:nth-child(2){left:84%;width:64px;height:64px;animation-delay:-16s;animation-duration:27s}
+.talca-app-bubbles i:nth-child(3){left:42%;width:20px;height:20px;animation-delay:-11s;animation-duration:18s}
+.talca-app-bubbles i:nth-child(4){left:94%;width:29px;height:29px;animation-delay:-3s;animation-duration:20s}
+.app-main { position: relative; z-index: 1; }
+
+.brand-logo { animation: talcaLogoFloat 4.6s ease-in-out infinite; transform-origin: 50% 70%; }
+@keyframes talcaLogoFloat {
+    0%,100% { transform: translateY(0) rotate(0); }
+    50% { transform: translateY(-3px) rotate(-.6deg); }
+}
+
+.btn-primary { position: relative; overflow: hidden; isolation: isolate; }
+.btn-primary::after {
+    content: "";
+    position: absolute;
+    inset: -40% auto -40% -38%;
+    z-index: -1;
+    width: 28%;
+    background: linear-gradient(100deg, transparent, rgba(255,255,255,.35), transparent);
+    transform: skewX(-18deg);
+    transition: left .55s ease;
+}
+.btn-primary:hover::after { left: 118%; }
+
+.dashboard-stat,
+.dashboard-panel,
+.dashboard-news-featured,
+.important-date-card,
+.birthday-greeting {
+    animation: talcaCardIn .48s both;
+}
+.dashboard-stats > *:nth-child(2) .dashboard-stat { animation-delay: .05s; }
+.dashboard-stats > *:nth-child(3) .dashboard-stat { animation-delay: .10s; }
+.dashboard-stats > *:nth-child(4) .dashboard-stat { animation-delay: .15s; }
+@keyframes talcaCardIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dashboard-stat .stat-icon,
+.quick-actions i,
+.module-card .module-icon { transition: transform .24s cubic-bezier(.2,.8,.2,1); }
+.dashboard-stat:hover .stat-icon { transform: translateY(-2px) rotate(-4deg) scale(1.06); }
+.quick-actions a:hover i { transform: translateY(-2px) rotate(5deg) scale(1.1); }
+.module-card:hover .module-icon { transform: rotate(-5deg) scale(1.07); }
+.notification-button:hover > i { animation: talcaBell .5s ease; transform-origin: top center; }
+@keyframes talcaBell { 0%,100%{transform:rotate(0)} 25%{transform:rotate(12deg)} 60%{transform:rotate(-10deg)} 82%{transform:rotate(5deg)} }
+
+.dashboard-news-hero-image.no-image::before,
+.dashboard-news-hero-image.no-image::after {
+    content: "";
+    position: absolute;
+    border: 2px solid rgba(255,255,255,.24);
+    border-radius: 50%;
+    animation: talcaHeroFizz 5s ease-in-out infinite;
+}
+.dashboard-news-hero-image.no-image::before { width: 48px; height: 48px; left: 15%; bottom: 15%; }
+.dashboard-news-hero-image.no-image::after { width: 20px; height: 20px; right: 18%; top: 18%; animation-delay: -2.4s; }
+@keyframes talcaHeroFizz { 0%,100%{transform:translateY(7px) scale(.88);opacity:.4} 50%{transform:translateY(-12px) scale(1.08);opacity:.85} }
+
+@media (prefers-reduced-motion: reduce) {
+    .talca-bubbles i,
+    .talca-app-bubbles i,
+    .brand-logo,
+    .dashboard-stat,
+    .dashboard-panel,
+    .dashboard-news-featured,
+    .important-date-card,
+    .birthday-greeting,
+    .dashboard-news-hero-image.no-image::before,
+    .dashboard-news-hero-image.no-image::after { animation: none !important; }
+    .btn-primary::after { display: none; }
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+}
+
+@media (max-width: 991.98px) {
+    .talca-app-bubbles { left: 0; }
+    .talca-bubbles i:nth-child(n+7) { display: none; }
+}
+
+/* Selector de tema */
+.theme-toggle {
+    position: relative;
+    display: grid;
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    place-items: center;
+    border: 1px solid #eadfdd;
+    border-radius: 50%;
+    background: #fffaf8;
+    color: #b9181f;
+    font-size: 16px;
+    box-shadow: 0 5px 15px rgba(72,35,32,.06);
+    transition: transform .22s ease, background .22s ease, color .22s ease;
+    pointer-events: auto;
+    cursor: pointer;
+}
+.theme-toggle span { font-family: Montserrat, Inter, sans-serif; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.topbar-theme-toggle { order: 99; display: inline-flex; width: 132px; max-width: 132px; padding: 0 13px; align-items: center; justify-content: center; gap: 8px; border-radius: 20px; }
+.theme-toggle:hover { transform: translateY(-2px); background: #fff0ef; }
+.theme-toggle:focus-visible { outline: 3px solid rgba(229,27,35,.23); outline-offset: 2px; }
+.auth-theme-toggle { position: absolute !important; z-index: 20; top: 28px; right: 30px; display: inline-flex; width: 132px; max-width: 132px; padding: 0 13px; align-items: center; justify-content: center; gap: 8px; border-radius: 20px; }
+
+body, .sidebar, .topbar, .card, .dashboard-news-hero, .dashboard-news-secondary-list,
+.quick-actions a, .document-folder, .form-control, .form-select, .dropdown-menu,
+.activity-row, .login-card {
+    transition: background-color .28s ease, border-color .28s ease, color .28s ease, box-shadow .28s ease;
+}
+
+/* Modo oscuro Talca: carbón cálido, rojo vivo y contraste accesible. */
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --ink: #f7efec;
+    --muted: #b9aca9;
+    --line: #493c3a;
+    --canvas: #171314;
+    --surface: #211b1c;
+    --sidebar: #1c1718;
+    --sidebar-muted: #c0b3b0;
+    --primary-soft: #441d20;
+    --shadow: 0 2px 5px rgba(0,0,0,.20), 0 15px 36px rgba(0,0,0,.20);
+}
+html[data-theme="dark"] body {
+    background:
+        radial-gradient(circle at 88% 5%, rgba(229,27,35,.10) 0 105px, transparent 106px),
+        radial-gradient(circle at 82% 11%, rgba(239,178,57,.045) 0 42px, transparent 43px),
+        #171314;
+}
+html[data-theme="dark"] .sidebar {
+    background: rgba(28,23,24,.98);
+    border-color: #493c3a;
+    box-shadow: 8px 0 30px rgba(0,0,0,.22);
+}
+html[data-theme="dark"] .brand { border-color: #403536; }
+html[data-theme="dark"] .brand-copy small,
+html[data-theme="dark"] .nav-caption { color: #aa9b98; }
+html[data-theme="dark"] .sidebar .nav-link { color: #c9bcba; }
+html[data-theme="dark"] .sidebar .nav-link:hover { background: #382123; color: #ff777b; }
+html[data-theme="dark"] .sidebar .nav-link.active { color: #fff; background: linear-gradient(100deg,#c7141b,#e9272e); }
+html[data-theme="dark"] .sidebar-footer { border-color: #423638; }
+html[data-theme="dark"] .topbar {
+    background: rgba(29,24,25,.9);
+    border-color: #493c3a;
+    box-shadow: 0 5px 22px rgba(0,0,0,.16);
+}
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .dashboard-news-hero,
+html[data-theme="dark"] .dashboard-news-secondary-list,
+html[data-theme="dark"] .quick-actions a,
+html[data-theme="dark"] .document-folder,
+html[data-theme="dark"] .document-folder-summary,
+html[data-theme="dark"] .employee-summary,
+html[data-theme="dark"] .notification-dropdown,
+html[data-theme="dark"] .dropdown-menu,
+html[data-theme="dark"] .login-card {
+    background: #211b1c;
+    border-color: #493c3a;
+    color: var(--ink);
+}
+html[data-theme="dark"] .dashboard-panel > .card-header,
+html[data-theme="dark"] .dashboard-calendar > .card-header,
+html[data-theme="dark"] .card > .card-header,
+html[data-theme="dark"] .document-origin-panel > .card-header {
+    background: #292122 !important;
+    border-bottom-color: #493c3a;
+}
+html[data-theme="dark"] .dashboard-panel > .card-header h2,
+html[data-theme="dark"] .dashboard-panel > .card-header p,
+html[data-theme="dark"] .dashboard-panel > .card-header a,
+html[data-theme="dark"] .card > .card-header h2,
+html[data-theme="dark"] .card > .card-header p {
+    color: inherit;
+}
+html[data-theme="dark"] .dashboard-panel > .card-header p,
+html[data-theme="dark"] .card > .card-header p { color: #b9aca9; }
+html[data-theme="dark"] .dashboard-panel > .card-header a { color: #ff777b; }
+html[data-theme="dark"] h1,
+html[data-theme="dark"] h2,
+html[data-theme="dark"] h3,
+html[data-theme="dark"] h4,
+html[data-theme="dark"] h5,
+html[data-theme="dark"] h6,
+html[data-theme="dark"] .activity-row,
+html[data-theme="dark"] .quick-actions a,
+html[data-theme="dark"] .user-menu,
+html[data-theme="dark"] .dropdown-item,
+html[data-theme="dark"] .table { color: var(--ink); }
+html[data-theme="dark"] .activity-row,
+html[data-theme="dark"] .document-record-row,
+html[data-theme="dark"] .checklist-item { border-color: #403536; }
+html[data-theme="dark"] .activity-row:hover,
+html[data-theme="dark"] .dashboard-news-secondary-list a:hover,
+html[data-theme="dark"] .document-record-row:hover,
+html[data-theme="dark"] .dropdown-item:hover { background: #302426; }
+html[data-theme="dark"] .form-control,
+html[data-theme="dark"] .form-select,
+html[data-theme="dark"] .input-group-text,
+html[data-theme="dark"] .employee-select-search {
+    background-color: #181415;
+    border-color: #554648;
+    color: #f5ece9;
+}
+html[data-theme="dark"] .form-control::placeholder { color: #8f8280; }
+html[data-theme="dark"] .table > :not(caption) > * > * { color: var(--ink); border-color: #403536; }
+html[data-theme="dark"] .table-light { --bs-table-bg: #2a2223; --bs-table-color: #f7efec; }
+html[data-theme="dark"] .checklist-add,
+html[data-theme="dark"] .calendar-day.empty { background: #1a1617; }
+html[data-theme="dark"] .calendar-day { background: #241e1f; border-color: #493c3a; color: #d2c6c3; }
+html[data-theme="dark"] .calendar-day.birthday { background: #173140; color: #8ed8ff; }
+html[data-theme="dark"] .calendar-day.holiday { background: #421c20; color: #ff9699; }
+html[data-theme="dark"] .calendar-day.birthday.holiday { background: linear-gradient(135deg,#421c20 50%,#173140 50%); }
+html[data-theme="dark"] .calendar-navigation a,
+html[data-theme="dark"] .theme-toggle { background: #2a2223; border-color: #554648; color: #ff6d72; }
+html[data-theme="dark"] .theme-toggle:hover { background: #3a2527; }
+html[data-theme="dark"] .user-avatar,
+html[data-theme="dark"] .panel-count { background: #441d20; color: #ff777b; }
+html[data-theme="dark"] .dashboard-news-empty,
+html[data-theme="dark"] .document-origin-note { background: #211b1c; border-color: #554648; }
+html[data-theme="dark"] .important-date-card { background: #302718; border-color: #6b5529; color: var(--ink); }
+html[data-theme="dark"] .data-warning,
+html[data-theme="dark"] .private-archive-warning { background: #332919; border-color: #665129; color: #f1ca78; }
+html[data-theme="dark"] .activity-file,
+html[data-theme="dark"] .document-folder-icon { background: #342b2c; color: #d9caca; }
+html[data-theme="dark"] .badge.bg-secondary-subtle { background: #3a3132 !important; color: #d8cbca !important; }
+html[data-theme="dark"] .birthday-greeting { background-color: #2c2027; border-color: #604052; }
+html[data-theme="dark"] .employee-sanctions { background: #301b1d; border-color: #71353a; }
+html[data-theme="dark"] .employee-sanctions-list { background: #211b1c; }
+html[data-theme="dark"] .employee-sanction-item { border-color: #493033; }
+html[data-theme="dark"] .alert-success { background: #19382d; color: #b9f4dd; }
+html[data-theme="dark"] .alert-danger { background: #431f22; color: #ffc7c9; }
+html[data-theme="dark"] .auth-page {
+    background:
+        radial-gradient(circle at 12% 16%,rgba(255,255,255,.12) 0 36px,transparent 37px),
+        radial-gradient(circle at 5% 28%,rgba(255,255,255,.07) 0 68px,transparent 69px),
+        linear-gradient(125deg,#8f0d13 0 28%,#c7131a 28% 46%,#171314 46%);
+}
+html[data-theme="dark"] .auth-footer { color: #a99996; }
+html[data-theme="dark"] .talca-app-bubbles i {
+    border-color: rgba(255,105,110,.17);
+    background: radial-gradient(circle at 30% 25%, rgba(255,255,255,.12), rgba(229,27,35,.07) 52%, transparent 72%);
+    box-shadow: inset 0 0 8px rgba(255,255,255,.035), 0 5px 18px rgba(0,0,0,.10);
+}
+
+/* Notificaciones: superficies coherentes y legibles en modo oscuro. */
+html[data-theme="dark"] .notification-page,
+html[data-theme="dark"] .notification-dropdown {
+    background: #211b1c;
+    border-color: #493c3a;
+}
+html[data-theme="dark"] .notification-row,
+html[data-theme="dark"] .notification-row.unread,
+html[data-theme="dark"] .notification-mini {
+    background: #211b1c !important;
+    border-color: #403536;
+    color: #f7efec;
+}
+html[data-theme="dark"] .notification-row.unread {
+    background: #291f20 !important;
+    box-shadow: inset 3px 0 #e51b23;
+}
+html[data-theme="dark"] .notification-row:hover,
+html[data-theme="dark"] .notification-mini:hover {
+    background: #302426 !important;
+}
+html[data-theme="dark"] .notification-content h2,
+html[data-theme="dark"] .notification-mini strong,
+html[data-theme="dark"] .notification-dropdown-head strong {
+    color: #f7efec;
+}
+html[data-theme="dark"] .notification-content p,
+html[data-theme="dark"] .notification-mini small {
+    color: #c7bab7;
+}
+html[data-theme="dark"] .notification-content time,
+html[data-theme="dark"] .notification-content small,
+html[data-theme="dark"] .notification-mini em,
+html[data-theme="dark"] .notification-dropdown-head small {
+    color: #9f918e;
+}
+html[data-theme="dark"] .notification-dropdown-head {
+    background: #292122;
+    border-color: #493c3a;
+}
+html[data-theme="dark"] .notification-mini-icon,
+html[data-theme="dark"] .notification-page-icon {
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.06);
+}
+html[data-theme="dark"] .notification-mini-icon.noticia,
+html[data-theme="dark"] .notification-page-icon.noticia {
+    background: #3b2d17;
+    color: #f3c164;
+}
+html[data-theme="dark"] .notification-mini-icon.documento,
+html[data-theme="dark"] .notification-page-icon.documento {
+    background: #202d47;
+    color: #8eb3ff;
+}
+html[data-theme="dark"] .notification-mini-icon.licencia,
+html[data-theme="dark"] .notification-page-icon.licencia {
+    background: #18372c;
+    color: #72d5ad;
+}
+html[data-theme="dark"] .notification-mini-icon.horas_extra,
+html[data-theme="dark"] .notification-page-icon.horas_extra {
+    background: #302747;
+    color: #bca4ff;
+}
+
+@media (max-width: 575.98px) {
+    .auth-theme-toggle { top: 20px; right: 18px; }
+    .theme-toggle span { display: none; }
+    .topbar-theme-toggle, .auth-theme-toggle { width: 40px; padding: 0; border-radius: 50%; }
+    html[data-theme="dark"] .auth-page { background: linear-gradient(160deg,#b70f16 0 17%,#171314 17%); }
+}

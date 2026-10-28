@@ -6,6 +6,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db
 from database.models import HorasExtra, Empleado
+from modules.notificaciones.services import notificar_empleado, notificar_rrhh
 from .forms import UploadVoetimeForm, HorasExtraManualForm
 
 horas_extra_bp = Blueprint('horas_extra', __name__, url_prefix='/horas_extra')
@@ -66,6 +67,13 @@ def cargar_manual():
                 )
                 try:
                     db.session.add(registro)
+                    db.session.flush()
+                    notificar_rrhh(
+                        'Nueva solicitud de horas extra',
+                        f'{current_user.empleado.nombre_apellido} informó horas extra para el {registro.fecha:%d/%m/%Y}.',
+                        'horas_extra', 'horas_extra_rrhh', registro.id,
+                        excluir_usuario_id=current_user.id,
+                    )
                     db.session.commit()
                     flash('Tus horas extra fueron enviadas a Recursos Humanos.', 'success')
                     return redirect(url_for('horas_extra.index'))
@@ -277,6 +285,11 @@ def aprobar(id):
     
     registro = HorasExtra.query.get_or_404(id)
     registro.estado = 'Aprobado'
+    notificar_empleado(
+        registro.empleado_id, 'Horas extra aprobadas',
+        f'Tus horas extra del {registro.fecha:%d/%m/%Y} fueron aprobadas.',
+        'horas_extra', 'horas_extra', registro.id,
+    )
     db.session.commit()
     flash('Horas extra aprobadas.', 'success')
     return redirect(url_for('horas_extra.index'))
@@ -293,6 +306,13 @@ def rechazar(id):
     observacion = request.form.get('observacion', '').strip()
     if observacion:
         registro.observaciones = observacion
+    mensaje = f'Tus horas extra del {registro.fecha:%d/%m/%Y} fueron rechazadas.'
+    if observacion:
+        mensaje += f' Observación: {observacion}'
+    notificar_empleado(
+        registro.empleado_id, 'Horas extra rechazadas', mensaje,
+        'horas_extra', 'horas_extra', registro.id,
+    )
     db.session.commit()
     flash('Solicitud de horas extra rechazada.', 'success')
     return redirect(url_for('horas_extra.index'))

@@ -15,7 +15,6 @@
                 <thead class="table-light">
                     <tr>
                         <th>Título</th>
-                        <th>Estado</th>
                         <th>Visibilidad</th>
                         <th>Fecha Pub.</th>
                         <th>Autor</th>
@@ -27,13 +26,6 @@
                     <tr>
                         <td>{{ noticia.titulo }}</td>
                         <td>
-                            {% if noticia.estado == 'Publicada' %}
-                            <span class="badge bg-success">Publicada</span>
-                            {% else %}
-                            <span class="badge bg-secondary">Borrador</span>
-                            {% endif %}
-                        </td>
-                        <td>
                             {% if noticia.visible_todos %}
                             Toda la empresa
                             {% else %}
@@ -43,6 +35,7 @@
                         <td>{{ noticia.fecha_publicacion.strftime('%d/%m/%Y %H:%M') if noticia.fecha_publicacion else '-' }}</td>
                         <td>{{ noticia.publicador.usuario if noticia.publicador else 'Desconocido' }}</td>
                         <td>
+                            <a href="{{ url_for('noticias.editar', id=noticia.id) }}" class="btn btn-sm btn-outline-primary" title="Editar"><i class="bi bi-pencil"></i></a>
                             <form action="{{ url_for('noticias.eliminar', id=noticia.id) }}" method="POST" style="display: inline;">
                                 <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Seguro que deseas eliminar esta noticia?');" title="Eliminar">
                                     <i class="bi bi-trash"></i>
@@ -52,7 +45,7 @@
                     </tr>
                     {% else %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted">No hay noticias redactadas.</td>
+                        <td colspan="5" class="text-center text-muted">No hay noticias publicadas.</td>
                     </tr>
                     {% endfor %}
                 </tbody>

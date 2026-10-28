@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, TextAreaField, SelectField, BooleanField, SubmitField
+from wtforms import StringField, TextAreaField, SelectField, BooleanField, SubmitField, DateField
 from wtforms.validators import DataRequired, Length, Optional
 
 class NoticiaForm(FlaskForm):
@@ -14,12 +14,9 @@ class NoticiaForm(FlaskForm):
         )
     ])
     
-    estado = SelectField('Estado', choices=[
-        ('Borrador', 'Borrador'),
-        ('Publicada', 'Publicada')
-    ], default='Borrador')
-    
     visible_todos = BooleanField('Visible para toda la empresa', default=True)
+    es_fecha_importante = BooleanField('Mostrar como fecha importante en el dashboard')
+    fecha_importante = DateField('Fecha del evento', validators=[Optional()])
     
     empresa_id = SelectField('Filtrar por Empresa', coerce=int, default=0)
     sector_id = SelectField('Filtrar por Sector', coerce=int, default=0)

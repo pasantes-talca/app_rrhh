@@ -1,0 +1,9 @@
+<nav class="admin-tabs">
+  <a href="{{ url_for('administracion.index') }}" class="{% if request.endpoint=='administracion.index' %}active{% endif %}"><i class="bi bi-speedometer2"></i>Resumen</a>
+  <a href="{{ url_for('administracion.usuarios') }}" class="{% if 'usuario' in request.endpoint or request.endpoint=='administracion.permisos' %}active{% endif %}"><i class="bi bi-people"></i>Usuarios</a>
+  <a href="{{ url_for('administracion.auditoria') }}" class="{% if request.endpoint=='administracion.auditoria' %}active{% endif %}"><i class="bi bi-journal-check"></i>Auditoría</a>
+  <a href="{{ url_for('administracion.reportes') }}" class="{% if request.endpoint=='administracion.reportes' %}active{% endif %}"><i class="bi bi-bar-chart"></i>Reportes</a>
+  <a href="{{ url_for('administracion.errores') }}" class="{% if 'error' in request.endpoint %}active{% endif %}"><i class="bi bi-bug"></i>Errores</a>
+  <a href="{{ url_for('administracion.seguridad') }}" class="{% if request.endpoint=='administracion.seguridad' %}active{% endif %}"><i class="bi bi-shield-lock"></i>Seguridad</a>
+  <a href="{{ url_for('administracion.sistema') }}" class="{% if request.endpoint=='administracion.sistema' %}active{% endif %}"><i class="bi bi-database-check"></i>Sistema</a>
+</nav>

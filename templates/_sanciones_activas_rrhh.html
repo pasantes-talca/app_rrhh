@@ -1,0 +1,13 @@
+{% if sanciones_activas %}
+<section class="card no-hover dashboard-panel active-sanctions-panel mt-3" aria-labelledby="sanciones-activas-title">
+  <div class="card-header d-flex justify-content-between align-items-center"><div><h2 id="sanciones-activas-title">Sanciones vigentes</h2><p>Medidas notificadas que todavía se encuentran activas</p></div><a href="{{ url_for('sanciones.index') }}">Ver historial</a></div>
+  <div class="activity-list">
+    {% for sancion in sanciones_activas %}<a href="{{ url_for('sanciones.ver', id=sancion.id) }}" class="activity-row">
+      <span class="activity-file active-sanction-icon"><i class="bi bi-shield-exclamation"></i></span>
+      <span class="activity-main"><strong>{{ sancion.empleado.nombre_apellido if sancion.empleado else 'Sin empleado' }}</strong><small>{{ sancion.tipo }} · {{ sancion.motivo }}{% if sancion.fecha_hasta %} · Hasta el {{ sancion.fecha_hasta.strftime('%d/%m/%Y') }}{% endif %}</small></span>
+      {% if sancion.dias_restantes is not none %}<span class="sanction-time-badge{% if sancion.dias_restantes == 0 %} ends-today{% endif %}">{% if sancion.dias_restantes == 0 %}Finaliza hoy{% elif sancion.dias_restantes == 1 %}Queda 1 día{% else %}Quedan {{ sancion.dias_restantes }} días{% endif %}</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">Sin vencimiento</span>{% endif %}
+      <i class="bi bi-chevron-right"></i>
+    </a>{% endfor %}
+  </div>
+</section>
+{% endif %}

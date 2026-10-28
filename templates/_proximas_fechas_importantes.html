@@ -1,0 +1,12 @@
+<div class="col-xl-6"><section class="card no-hover dashboard-panel h-100 upcoming-important-dates">
+  <div class="card-header d-flex justify-content-between align-items-center"><div><h2>Próximas fechas importantes</h2><p>Feriados y noticias vinculadas a una fecha</p></div><a href="{{ url_for('dashboard.index', mes=calendario_dashboard.mes, anio=calendario_dashboard.anio) }}#calendario-dashboard">Ver calendario</a></div>
+  <div class="activity-list">
+    {% for evento in proximas_fechas_importantes %}
+      {% if evento.noticia %}<a href="{{ url_for('noticias.muro') }}" class="activity-row">{% else %}<div class="activity-row">{% endif %}
+        <span class="activity-file important-event-icon {{ evento.tipo }}"><i class="bi {% if evento.tipo == 'noticia' %}bi-megaphone{% else %}bi-calendar-event{% endif %}"></i></span>
+        <span class="activity-main"><strong>{{ evento.titulo }}</strong><small>{{ evento.fecha.strftime('%d/%m/%Y') }}{% if evento.tipo == 'noticia' %} · Noticia destacada{% else %} · Fecha oficial{% endif %}</small></span>
+        {% if evento.dias == 0 %}<span class="badge bg-danger-subtle text-danger">Hoy</span>{% elif evento.dias == 1 %}<span class="badge bg-warning-subtle text-warning-emphasis">Mañana</span>{% else %}<span class="days-away">En {{ evento.dias }} días</span>{% endif %}
+        {% if evento.noticia %}<i class="bi bi-chevron-right"></i></a>{% else %}</div>{% endif %}
+    {% else %}<div class="empty-dashboard"><i class="bi bi-calendar2-event"></i><strong>Sin fechas próximas</strong><span>No hay eventos destacados cargados.</span></div>{% endfor %}
+  </div>
+</section></div>

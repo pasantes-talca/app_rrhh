@@ -25,13 +25,21 @@
                         <label class="form-label fw-bold">{{ form.imagen.label }}</label>
                         {{ form.imagen(class="form-control" + (' is-invalid' if form.imagen.errors else '')) }}
                         <div class="form-text">Formatos permitidos: JPG, PNG, GIF, WEBP, PDF, Word y Excel.</div>
+                        {% if noticia and noticia.imagen %}<div class="form-text text-success"><i class="bi bi-paperclip me-1"></i>La noticia ya tiene un archivo. Solo elegí otro si querés reemplazarlo.</div>{% endif %}
                         {% for error in form.imagen.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
                     </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">{{ form.estado.label }}</label>
-                            {{ form.estado(class="form-select") }}
+
+                    <div class="card mb-4 border-0 bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title text-muted">Fecha importante</h6>
+                            <div class="form-check mb-3">
+                                {{ form.es_fecha_importante(class="form-check-input", id="es-fecha-importante") }}
+                                <label class="form-check-label" for="es-fecha-importante">{{ form.es_fecha_importante.label.text }}</label>
+                            </div>
+                            <label class="form-label small" for="fecha-importante">{{ form.fecha_importante.label.text }}</label>
+                            {{ form.fecha_importante(class="form-control", id="fecha-importante") }}
+                            {% for error in form.fecha_importante.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                            <div class="form-text">La noticia aparecerá junto a los próximos cumpleaños y quedará marcada en el calendario.</div>
                         </div>
                     </div>
 
@@ -58,7 +66,7 @@
                     
                     <div class="d-flex justify-content-between">
                         <a href="{{ url_for('noticias.index') }}" class="btn btn-secondary">Cancelar</a>
-                        {{ form.submit(class="btn btn-primary") }}
+                        <button class="btn btn-primary" type="submit"><i class="bi bi-megaphone me-2"></i>{% if noticia %}Guardar cambios{% else %}Publicar noticia{% endif %}</button>
                     </div>
                 </form>
             </div>

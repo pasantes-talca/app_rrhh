@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Mis recibos · Talca Personas{% endblock %}
+{% block content %}
+<div class="page-heading"><span class="eyebrow">MIS DOCUMENTOS</span><h1>Mis recibos de sueldo</h1><p>Consultá, descargá y confirmá la recepción de tus recibos.</p></div>
+<div class="receipt-grid">{% for recibo in recibos %}<a href="{{ url_for('documentos.ver_recibo', id=recibo.id) }}" class="card no-hover receipt-card"><span class="receipt-card-icon"><i class="bi bi-receipt"></i></span><div><small>PERÍODO</small><h2>{{ recibo.periodo[5:7] }}/{{ recibo.periodo[:4] }}</h2><p>{{ recibo.documento.nombre_documento }}</p></div><span class="receipt-status {{ recibo.estado|lower }}">{{ recibo.estado }}</span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="card no-hover empty-dashboard"><i class="bi bi-receipt"></i><strong>Todavía no tenés recibos</strong><span>Cuando RR. HH. publique uno aparecerá aquí.</span></div>{% endfor %}</div>
+{% endblock %}

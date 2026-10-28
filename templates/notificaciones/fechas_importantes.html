@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Fechas importantes · Talca Personas{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <span class="eyebrow">COMUNICACIONES</span>
+  <h1>Fechas importantes</h1>
+  <p>Feriados y conmemoraciones que se mostrarán a todo el personal.</p>
+</div>
+<div class="row g-3">
+  <div class="col-lg-4">
+    <section class="card no-hover"><div class="card-body p-4">
+      <h2 class="h5 mb-3">Agregar una fecha</h2>
+      <form method="POST">
+        <div class="mb-3"><label class="form-label" for="fecha">Fecha</label><input class="form-control" type="date" id="fecha" name="fecha" required></div>
+        <div class="mb-3"><label class="form-label" for="descripcion">Descripción</label><input class="form-control" id="descripcion" name="descripcion" maxlength="200" placeholder="Ej.: Aniversario de la empresa" required></div>
+        <button class="btn btn-primary w-100"><i class="bi bi-plus-lg me-2"></i>Agregar fecha</button>
+      </form>
+    </div></section>
+  </div>
+  <div class="col-lg-8">
+    <section class="card no-hover dashboard-panel">
+      <div class="card-header"><h2>Calendario cargado</h2><p>{{ fechas|length }} fechas registradas</p></div>
+      <div class="activity-list">
+      {% for item in fechas %}
+        <div class="activity-row"><span class="activity-file"><i class="bi bi-calendar-event"></i></span><span class="activity-main"><strong>{{ item.descripcion }}</strong><small>{{ item.fecha.strftime('%d/%m/%Y') }}</small></span><form method="POST" action="{{ url_for('notificaciones.eliminar_fecha_importante', id=item.id) }}" onsubmit="return confirm('¿Eliminar esta fecha?')"><button class="btn btn-sm btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button></form></div>
+      {% else %}<div class="empty-dashboard"><i class="bi bi-calendar"></i><strong>Sin fechas cargadas</strong><span>Agregá la primera desde el formulario.</span></div>{% endfor %}
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

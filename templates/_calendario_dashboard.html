@@ -1,0 +1,23 @@
+<section id="calendario-dashboard" class="card no-hover dashboard-calendar" aria-labelledby="calendar-title">
+  <div class="card-header calendar-heading">
+    <div><h2 id="calendar-title">Calendario</h2><p>Fechas importantes del mes</p></div>
+    <div class="calendar-navigation">
+      <a href="{{ url_for('dashboard.index', mes=calendario_dashboard.anterior.month, anio=calendario_dashboard.anterior.year) }}" aria-label="Mes anterior"><i class="bi bi-chevron-left"></i></a>
+      <strong>{{ calendario_dashboard.nombre_mes }} {{ calendario_dashboard.anio }}</strong>
+      <a href="{{ url_for('dashboard.index', mes=calendario_dashboard.siguiente.month, anio=calendario_dashboard.siguiente.year) }}" aria-label="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
+    </div>
+  </div>
+  <div class="calendar-wrap">
+    <div class="calendar-grid calendar-weekdays">{% for dia in ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] %}<span>{{ dia }}</span>{% endfor %}</div>
+    <div class="calendar-grid calendar-days">
+      {% for semana in calendario_dashboard.semanas %}{% for dia in semana %}
+        {% if dia %}<div class="calendar-day{% if dia.es_hoy %} today{% endif %}{% if dia.cumpleanos %} birthday{% endif %}{% if dia.feriado %} holiday{% endif %}{% if dia.noticias %} news-event{% endif %}"{% if dia.cumpleanos or dia.feriado or dia.noticias %} tabindex="0"{% endif %}>
+          <span>{{ dia.numero }}</span>
+          <div class="calendar-markers">{% if dia.cumpleanos %}<i class="birthday-dot"></i>{% endif %}{% if dia.feriado %}<i class="holiday-dot"></i>{% endif %}{% if dia.noticias %}<i class="news-dot"></i>{% endif %}</div>
+          {% if dia.cumpleanos or dia.feriado or dia.noticias %}<div class="calendar-tooltip">{% if dia.feriado %}<strong>{{ dia.feriado }}</strong>{% endif %}{% for nombre in dia.cumpleanos %}<span><i class="bi bi-gift"></i> Cumpleaños de {{ nombre }}</span>{% endfor %}{% for noticia in dia.noticias %}<span><i class="bi bi-megaphone"></i> {{ noticia.titulo }}</span>{% endfor %}</div>{% endif %}
+        </div>{% else %}<div class="calendar-day empty"></div>{% endif %}
+      {% endfor %}{% endfor %}
+    </div>
+    <div class="calendar-legend"><span><i class="birthday-dot"></i>Cumpleaños</span><span><i class="holiday-dot"></i>Feriado</span><span><i class="news-dot"></i>Noticia importante</span><span><i class="today-dot"></i>Hoy</span></div>
+  </div>
+</section>

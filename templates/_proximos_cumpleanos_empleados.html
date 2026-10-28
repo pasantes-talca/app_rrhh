@@ -1,0 +1,33 @@
+<div class="col-xl-6"><section class="card no-hover dashboard-panel h-100" aria-labelledby="cumpleanos-proximos-title">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <div>
+      <h2 id="cumpleanos-proximos-title">Próximos cumpleaños</h2>
+      <p>Compañeros que cumplen años en los próximos 30 días</p>
+    </div>
+    <span class="panel-count">{{ proximos_cumpleanos|length }}</span>
+  </div>
+  <div class="activity-list">
+    {% for item in proximos_cumpleanos %}
+    <div class="activity-row">
+      <span class="activity-avatar birthday-avatar"><i class="bi bi-gift"></i></span>
+      <span class="activity-main">
+        <strong>{{ item.empleado.nombre_apellido }}</strong>
+        <small>{{ item.fecha.strftime('%d/%m') }}</small>
+      </span>
+      {% if item.dias == 0 %}
+      <span class="badge bg-primary-subtle text-primary">Hoy</span>
+      {% elif item.dias == 1 %}
+      <span class="badge bg-warning-subtle text-warning-emphasis">Mañana</span>
+      {% else %}
+      <span class="days-away">En {{ item.dias }} días</span>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="empty-dashboard birthday-empty">
+      <i class="bi bi-balloon"></i>
+      <strong>Sin cumpleaños próximos</strong>
+      <span>No hay fechas registradas dentro de los próximos 30 días.</span>
+    </div>
+    {% endfor %}
+  </div>
+</section></div>

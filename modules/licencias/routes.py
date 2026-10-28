@@ -5,6 +5,7 @@ from flask_login import login_required, current_user
 from werkzeug.utils import secure_filename
 from extensions import db
 from database.models import Licencia, TipoLicencia, Empleado
+from modules.notificaciones.services import notificar_empleado, notificar_rrhh
 from .forms import LicenciaForm, ResolucionLicenciaForm
 
 licencias_bp = Blueprint('licencias', __name__, url_prefix='/licencias')
@@ -69,6 +70,14 @@ def nueva():
         )
         try:
             db.session.add(licencia)
+            db.session.flush()
+            nombre_empleado = licencia.empleado.nombre_apellido if licencia.empleado else 'Un empleado'
+            notificar_rrhh(
+                'Nueva solicitud de licencia',
+                f'{nombre_empleado} solicitó una licencia del {licencia.fecha_desde:%d/%m/%Y} al {licencia.fecha_hasta:%d/%m/%Y}.',
+                'licencia', 'licencia_rrhh', licencia.id,
+                excluir_usuario_id=current_user.id,
+            )
             db.session.commit()
             flash('Solicitud de licencia enviada correctamente.', 'success')
             return redirect(url_for('licencias.index'))
@@ -97,6 +106,12 @@ def ver(id):
             licencia.aprobado_por = current_user.id
             licencia.fecha_resolucion = datetime.utcnow()
             try:
+                notificar_empleado(
+                    licencia.empleado_id,
+                    f'Licencia {licencia.estado.lower()}',
+                    f'Tu solicitud de licencia del {licencia.fecha_desde:%d/%m/%Y} al {licencia.fecha_hasta:%d/%m/%Y} fue {licencia.estado.lower()}.',
+                    'licencia', 'licencia', licencia.id,
+                )
                 db.session.commit()
                 flash(f'Licencia {form.estado.data.lower()} exitosamente.', 'success')
             except Exception as e:

@@ -4,14 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Talca Personas{% endblock %}</title>
+    <script>
+        (function () {
+            try {
+                var saved = localStorage.getItem('talca-theme');
+                var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.dataset.theme = theme;
+            } catch (e) {}
+        }());
+    </script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo-talca.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/birthday.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/important-date.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard-calendar.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/talca-theme.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/receipts.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/administracion.css') }}">
 </head>
 <body class="{% if not current_user.is_authenticated %}auth-page{% endif %}">
 {% if current_user.is_authenticated %}
 <div class="app-shell">
+    <div class="talca-app-bubbles" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="appSidebar">
         <div class="offcanvas-header d-lg-none">
             <span class="brand-name">Talca Personas</span>
@@ -20,7 +38,7 @@
         <div class="sidebar-inner">
             <a href="{{ url_for('dashboard.index') }}" class="brand">
                 <img src="{{ url_for('static', filename='img/logo-talca.png') }}" class="brand-logo" alt="Talca">
-                <span class="brand-copy"><small>Gestión de personas</small></span>
+                <span class="brand-copy"><small>Personas · Siempre con vos</small></span>
             </a>
             <span class="nav-caption">MENÚ PRINCIPAL</span>
             <nav class="nav flex-column">
@@ -32,17 +50,24 @@
                 <a href="{{ url_for('horas_extra.index') }}" class="nav-link {% if 'horas_extra' in request.endpoint %}active{% endif %}"><i class="bi bi-clock"></i><span>Horas extra</span></a>
                 <a href="{{ url_for('sanciones.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('sanciones.') %}active{% endif %}"><i class="bi bi-shield-exclamation"></i><span>Sanciones</span></a>
                 <a href="{{ url_for('noticias.index') }}" class="nav-link {% if 'noticias' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i><span>Noticias</span></a>
-                <a href="{{ url_for('documentos.recibidos') }}" class="nav-link {% if request.endpoint == 'documentos.recibidos' or (request.endpoint == 'documentos.index' and request.args.get('origen') == 'empleado') %}active{% endif %}"><i class="bi bi-inbox"></i><span>Documentos recibidos</span></a>
-                <a href="{{ url_for('documentos.index') }}" class="nav-link {% if 'documentos' in request.endpoint and request.endpoint != 'documentos.recibidos' and request.args.get('origen') != 'empleado' %}active{% endif %}"><i class="bi bi-folder2"></i><span>Documentos</span></a>
+                <a href="{{ url_for('notificaciones.fechas_importantes') }}" class="nav-link {% if request.endpoint == 'notificaciones.fechas_importantes' %}active{% endif %}"><i class="bi bi-calendar-event"></i><span>Fechas importantes</span></a>
+                <a href="{{ url_for('documentos.recibidos') }}" class="nav-link {% if request.endpoint in ['documentos.recibidos', 'documentos.legajo'] %}active{% endif %}"><i class="bi bi-person-vcard"></i><span>Legajos digitales</span></a>
+                <a href="{{ url_for('documentos.archivo_privado') }}" class="nav-link {% if request.endpoint == 'documentos.archivo_privado' %}active{% endif %}"><i class="bi bi-shield-lock"></i><span>Archivo privado</span></a>
+                <a href="{{ url_for('documentos.recibos') }}" class="nav-link {% if request.endpoint in ['documentos.recibos','documentos.nuevo_recibo','documentos.ver_recibo'] %}active{% endif %}"><i class="bi bi-receipt"></i><span>Recibos de sueldo</span></a>
                 {% else %}
                 <a href="{{ url_for('licencias.index') }}" class="nav-link {% if 'licencias' in request.endpoint %}active{% endif %}"><i class="bi bi-calendar2-check"></i><span>Mis licencias</span></a>
                 <a href="{{ url_for('horas_extra.index') }}" class="nav-link {% if 'horas_extra' in request.endpoint %}active{% endif %}"><i class="bi bi-clock"></i><span>Mis horas extra</span></a>
                 <a href="{{ url_for('noticias.muro') }}" class="nav-link {% if 'noticias' in request.endpoint %}active{% endif %}"><i class="bi bi-megaphone"></i><span>Noticias</span></a>
                 <a href="{{ url_for('documentos.mis_documentos') }}" class="nav-link {% if request.endpoint == 'documentos.mis_documentos' %}active{% endif %}"><i class="bi bi-folder2"></i><span>Mis documentos</span></a>
+                <a href="{{ url_for('documentos.mis_recibos') }}" class="nav-link {% if request.endpoint in ['documentos.mis_recibos','documentos.ver_recibo'] %}active{% endif %}"><i class="bi bi-receipt"></i><span>Mis recibos</span></a>
                 <a href="{{ url_for('documentos.enviar_rrhh') }}" class="nav-link {% if request.endpoint in ['documentos.enviar_rrhh','documentos.envios'] %}active{% endif %}"><i class="bi bi-send"></i><span>Enviar a RR. HH.</span></a>
+                {% endif %}
+                {% if current_user.rol.nombre == 'administrador' %}
+                <a href="{{ url_for('administracion.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('administracion.') %}active{% endif %}"><i class="bi bi-gear"></i><span>Administración</span></a>
                 {% endif %}
             </nav>
             <div class="sidebar-footer">
+                <a href="{{ url_for('auth.perfil') }}" class="nav-link {% if request.endpoint == 'auth.perfil' %}active{% endif %}"><i class="bi bi-person-circle"></i><span>Mi perfil</span></a>
                 <a href="{{ url_for('auth.logout') }}" class="nav-link"><i class="bi bi-box-arrow-left"></i><span>Cerrar sesión</span></a>
             </div>
         </div>
@@ -51,6 +76,7 @@
         <header class="topbar">
             <button class="btn menu-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar"><i class="bi bi-list"></i></button>
             <div class="topbar-spacer"></div>
+            <button class="theme-toggle topbar-theme-toggle ms-2" type="button" data-theme-toggle aria-label="Activar modo oscuro" title="Cambiar tema"><i class="bi bi-moon-stars"></i><span>Modo oscuro</span></button>
             <div class="dropdown me-2">
                 <button class="notification-button" data-bs-toggle="dropdown" aria-expanded="false" title="Notificaciones">
                     <i class="bi bi-bell"></i>
@@ -58,16 +84,18 @@
                 </button>
                 <div class="dropdown-menu dropdown-menu-end notification-dropdown border-0 shadow">
                     <div class="notification-dropdown-head"><div><strong>Notificaciones</strong><small>{{ notificaciones_no_leidas }} sin leer</small></div><a href="{{ url_for('notificaciones.index') }}">Ver todas</a></div>
-                    {% for notificacion in notificaciones_recientes %}<form method="POST" action="{{ url_for('notificaciones.leer', id=notificacion.id) }}"><button class="notification-mini"><span class="notification-mini-icon sanction"><i class="bi bi-shield-exclamation"></i></span><span><strong>{{ notificacion.titulo }}</strong><small>{{ notificacion.mensaje|truncate(90) }}</small><em>{{ notificacion.creado_en.strftime('%d/%m/%Y %H:%M') }}</em></span></button></form>{% else %}<div class="notification-empty"><i class="bi bi-bell-slash"></i><span>No tenés notificaciones nuevas.</span></div>{% endfor %}
+                    {% for notificacion in notificaciones_recientes %}<form method="POST" action="{{ url_for('notificaciones.leer', id=notificacion.id) }}"><button class="notification-mini"><span class="notification-mini-icon {{ notificacion.tipo }}"><i class="bi {% if notificacion.tipo == 'sancion' %}bi-shield-exclamation{% elif notificacion.tipo == 'licencia' %}bi-calendar2-check{% elif notificacion.tipo == 'documento' %}bi-file-earmark-text{% elif notificacion.tipo == 'noticia' %}bi-megaphone{% elif notificacion.tipo == 'horas_extra' %}bi-clock{% elif notificacion.tipo == 'cumpleanos' %}bi-gift{% else %}bi-info-circle{% endif %}"></i></span><span><strong>{{ notificacion.titulo }}</strong><small>{{ notificacion.mensaje|truncate(90) }}</small><em>{{ notificacion.creado_en.strftime('%d/%m/%Y %H:%M') }}</em></span></button></form>{% else %}<div class="notification-empty"><i class="bi bi-bell-slash"></i><span>No tenés notificaciones nuevas.</span></div>{% endfor %}
                 </div>
             </div>
             <div class="dropdown">
                 <button class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
-                    <span class="user-avatar">{{ current_user.usuario[:1]|upper }}</span>
-                    <span class="user-copy"><strong>{{ current_user.usuario }}</strong><small>{{ current_user.rol.nombre|replace('_', ' ')|title }}</small></span>
+                    <span class="user-avatar">{% if current_user.foto_perfil %}<img src="{{ url_for('auth.foto_perfil') }}" alt="Foto de perfil">{% else %}{{ (current_user.nombre_mostrar or current_user.usuario)[:1]|upper }}{% endif %}</span>
+                    <span class="user-copy"><strong>{{ current_user.nombre_mostrar or current_user.usuario }}</strong><small>{{ current_user.rol.nombre|replace('_', ' ')|title }}</small></span>
                     <i class="bi bi-chevron-down"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+                    <li><a class="dropdown-item" href="{{ url_for('auth.perfil') }}"><i class="bi bi-person-circle me-2"></i>Mi perfil</a></li>
+                    <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-left me-2"></i>Cerrar sesión</a></li>
                 </ul>
             </div>
@@ -82,7 +110,11 @@
 </div>
 {% else %}
 <main class="auth-shell">
-    <div class="auth-brand"><img src="{{ url_for('static', filename='img/logo-talca.png') }}" class="brand-logo auth-logo" alt="Talca"><span class="brand-copy"><small>Gestión de personas</small></span></div>
+    <div class="talca-bubbles" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+    </div>
+    <button class="theme-toggle auth-theme-toggle" type="button" data-theme-toggle aria-label="Activar modo oscuro" title="Cambiar tema"><i class="bi bi-moon-stars"></i><span>Modo oscuro</span></button>
+    <div class="auth-brand"><img src="{{ url_for('static', filename='img/logo-talca.png') }}" class="brand-logo auth-logo" alt="Talca"><span class="brand-copy"><small>Personas · Siempre con vos</small></span></div>
     <div class="auth-content">
         {% with messages = get_flashed_messages(with_categories=true) %}{% if messages %}{% for category, message in messages %}
         <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">{{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
@@ -93,5 +125,6 @@
 </main>
 {% endif %}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

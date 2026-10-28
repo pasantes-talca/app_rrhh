@@ -2,6 +2,7 @@ import os
 from werkzeug.security import generate_password_hash
 from app import create_app
 from extensions import db
+from sqlalchemy import text
 from database.models import (
     Rol, Empresa, Sector, Puesto, Jornada, TipoLicencia, TipoDocumento, Usuario, Empleado
 )
@@ -50,6 +51,15 @@ def init_db():
     with app.app_context():
         print("Creando tablas...")
         db.create_all()
+        # db.create_all no agrega columnas a tablas existentes.
+        db.session.execute(text("ALTER TABLE rrhh.usuarios ADD COLUMN IF NOT EXISTS nombre_mostrar VARCHAR(150)"))
+        db.session.execute(text("ALTER TABLE rrhh.usuarios ADD COLUMN IF NOT EXISTS foto_perfil VARCHAR(255)"))
+        db.session.execute(text("ALTER TABLE rrhh.usuarios ADD COLUMN IF NOT EXISTS cuenta_protegida BOOLEAN NOT NULL DEFAULT FALSE"))
+        db.session.execute(text("""
+            UPDATE rrhh.usuarios u SET cuenta_protegida = TRUE
+            FROM rrhh.roles r WHERE u.rol_id = r.id AND r.nombre = 'administrador'
+        """))
+        db.session.commit()
 
         print("Insertando datos iniciales...")
 
@@ -126,6 +136,11 @@ def init_db():
                 db.session.add(TipoDocumento(**td))
 
         db.session.commit()
+
+        # Calendario base de feriados nacionales y provinciales de Mendoza.
+        # Luego puede administrarse desde el panel de RR. HH.
+        from modules.notificaciones.services import sincronizar_calendario_mendoza_2026
+        sincronizar_calendario_mendoza_2026()
 
         # 8. Administrador inicial
         admin_rol = Rol.query.filter_by(nombre='administrador').first()

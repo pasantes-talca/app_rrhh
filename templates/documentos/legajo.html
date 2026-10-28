@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Legajo de {{ empleado.nombre_apellido }} · Talca Personas{% endblock %}
+{% macro lista_documentos(documentos, vacio) %}
+  <div class="document-record-list">{% for doc in documentos %}<a class="document-record-row" href="{{ url_for('documentos.detalle', id=doc.id) }}"><span class="activity-file"><i class="bi bi-file-earmark-text"></i></span><span class="document-record-main"><strong>{{ doc.nombre_documento }}</strong><small>{{ doc.tipo_documento.nombre if doc.tipo_documento else 'Sin tipo' }} · {{ doc.creado_en.strftime('%d/%m/%Y') }} · {{ doc.nombre_archivo }}</small></span><span class="badge {% if doc.estado == 'Activo' %}bg-success-subtle text-success{% else %}bg-secondary-subtle text-secondary{% endif %}">{{ doc.estado }}</span><i class="bi bi-chevron-right"></i></a>{% else %}<div class="document-record-empty"><i class="bi bi-inbox"></i><span>{{ vacio }}</span></div>{% endfor %}</div>
+{% endmacro %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-start gap-3 page-heading"><div><a href="{{ url_for('documentos.recibidos') }}" class="back-link"><i class="bi bi-arrow-left"></i> Legajos digitales</a><h1>{{ empleado.nombre_apellido }}</h1><p>Legajo {{ empleado.legajo or 'sin registrar' }}{% if empleado.sector %} · {{ empleado.sector.nombre }}{% endif %}</p></div><a href="{{ url_for('documentos.subir') }}" class="btn btn-primary"><i class="bi bi-cloud-arrow-up me-2"></i>Asignar documento</a></div>
+<div class="document-origin-note mb-4"><i class="bi bi-info-circle"></i><span>Este legajo diferencia los archivos que envió el empleado de los que RR. HH. le asignó o compartió.</span></div>
+<div class="row g-4">
+  <div class="col-xl-6"><section class="card no-hover h-100 document-origin-panel received"><div class="card-header"><div><span class="document-origin-icon"><i class="bi bi-inbox"></i></span><div><h2>Enviados por el empleado</h2><p>Documentos recibidos por RR. HH.</p></div></div><span class="panel-count">{{ enviados_empleado|length }}</span></div>{{ lista_documentos(enviados_empleado, 'Este empleado todavía no envió documentos.') }}</section></div>
+  <div class="col-xl-6"><section class="card no-hover h-100 document-origin-panel shared"><div class="card-header"><div><span class="document-origin-icon"><i class="bi bi-send"></i></span><div><h2>Asignados por RR. HH.</h2><p>Documentación asociada a este empleado</p></div></div><span class="panel-count">{{ compartidos_rrhh|length }}</span></div>{{ lista_documentos(compartidos_rrhh, 'RR. HH. todavía no asignó documentos.') }}</section></div>
+</div>
+{% endblock %}
