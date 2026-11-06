@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Mis vacaciones · Talca Personas{% endblock %}
+
+{% block content %}
+<div class="vacation-page">
+  <header class="vacation-heading">
+    <div>
+      <span class="eyebrow">MI CUENTA</span>
+      <h1>Mis vacaciones</h1>
+      <p>Consultá tus días disponibles y el detalle de tus solicitudes.</p>
+    </div>
+    <a href="{{ url_for('licencias.nueva') }}" class="btn btn-primary">
+      <i class="bi bi-calendar-plus"></i> Solicitar vacaciones
+    </a>
+  </header>
+
+  {% if not fecha_ingreso %}
+  <div class="alert alert-warning vacation-alert" role="alert">
+    <i class="bi bi-exclamation-triangle"></i>
+    <div><strong>No podemos calcular todavía tu saldo.</strong><span>Falta registrar tu fecha de ingreso. Comunicate con RR. HH. para completar el dato.</span></div>
+  </div>
+  {% elif meses_antiguedad is not none and meses_antiguedad < 6 %}
+  <div class="alert alert-info vacation-alert" role="alert">
+    <i class="bi bi-info-circle"></i>
+    <div><strong>Tu saldo requiere un cálculo proporcional.</strong><span>Al 31 de diciembre todavía no alcanzás 6 meses de antigüedad. RR. HH. debe determinar los días según el tiempo efectivamente trabajado.</span></div>
+  </div>
+  {% endif %}
+
+  <section class="vacation-hero">
+    <div class="vacation-balance">
+      <span>Disponible para solicitar</span>
+      <strong>{{ disponible_solicitar|int }}</strong>
+      <small>días corridos · período {{ anio }}</small>
+    </div>
+    <div class="vacation-person">
+      <span class="vacation-person-icon"><i class="bi bi-sun"></i></span>
+      <div><strong>{{ nombre }}</strong><small>{% if legajo %}Legajo {{ legajo }} · {% endif %}{% if fecha_ingreso %}Ingreso {{ fecha_ingreso.strftime('%d/%m/%Y') }}{% else %}Fecha de ingreso pendiente{% endif %}</small></div>
+    </div>
+  </section>
+
+  <div class="vacation-stats">
+    <article><span class="vacation-stat-icon red"><i class="bi bi-calendar-heart"></i></span><div><small>Correspondientes</small><strong>{{ dias_correspondientes if dias_correspondientes is not none else '—' }}</strong><em>Según antigüedad</em></div></article>
+    <article><span class="vacation-stat-icon green"><i class="bi bi-check2-circle"></i></span><div><small>Utilizados</small><strong>{{ dias_usados|int }}</strong><em>Solicitudes aprobadas</em></div></article>
+    <article><span class="vacation-stat-icon amber"><i class="bi bi-hourglass-split"></i></span><div><small>Reservados</small><strong>{{ dias_reservados|int }}</strong><em>Pendientes de aprobación</em></div></article>
+    <article><span class="vacation-stat-icon blue"><i class="bi bi-briefcase"></i></span><div><small>Antigüedad</small><strong>{{ antiguedad if antiguedad is not none else '—' }}</strong><em>{% if antiguedad is not none %}años al 31/12/{{ anio }}{% else %}Sin calcular{% endif %}</em></div></article>
+  </div>
+
+  <section class="card no-hover vacation-detail">
+    <div class="card-header"><div><h2>Movimientos del período</h2><p>Vacaciones solicitadas durante {{ anio }}</p></div><a href="{{ url_for('licencias.index') }}">Ver licencias</a></div>
+    <div class="activity-list">
+      {% for item in movimientos %}
+      <a href="{{ url_for('licencias.ver', id=item.id) }}" class="activity-row">
+        <span class="activity-file"><i class="bi bi-calendar-range"></i></span>
+        <span class="activity-main"><strong>{{ item.fecha_desde.strftime('%d/%m/%Y') }} al {{ item.fecha_hasta.strftime('%d/%m/%Y') }}</strong><small>{{ item.cantidad_dias|int }} días corridos</small></span>
+        <span class="badge {% if item.estado == 'Aprobada' %}bg-success-subtle text-success{% elif item.estado == 'Rechazada' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning-emphasis{% endif %}">{{ item.estado }}</span>
+        <i class="bi bi-chevron-right"></i>
+      </a>
+      {% else %}
+      <div class="empty-dashboard"><i class="bi bi-airplane"></i><strong>Sin movimientos</strong><span>Todavía no solicitaste vacaciones para este período.</span></div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if historial_importado %}
+  <section class="card no-hover vacation-detail mt-3">
+    <div class="card-header"><div><h2>Historial importado</h2><p>Últimos movimientos registrados por RR. HH. en la planilla</p></div>{% if saldo_registrado and saldo_registrado.fecha_corte %}<span class="vacation-source">Corte: {{ saldo_registrado.fecha_corte.strftime('%d/%m/%Y') }}</span>{% endif %}</div>
+    <div class="activity-list">
+      {% for item in historial_importado %}
+      <div class="activity-row">
+        <span class="activity-file"><i class="bi bi-file-earmark-spreadsheet"></i></span>
+        <span class="activity-main"><strong>{% if item.fecha_desde %}{{ item.fecha_desde.strftime('%d/%m/%Y') }}{% else %}Registro histórico{% endif %}{% if item.fecha_hasta %} al {{ item.fecha_hasta.strftime('%d/%m/%Y') }}{% endif %}</strong><small>{{ item.observaciones or item.detalle or 'Movimiento importado' }}</small></span>
+        {% if item.saldo_resultante is not none %}<span class="vacation-result"><strong>{{ item.saldo_resultante|int }}</strong><small>saldo</small></span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <p class="vacation-note"><i class="bi bi-info-circle"></i> {% if saldo_registrado and saldo_registrado.origen == 'EXCEL' %}Tu disponible toma como base el saldo informado por RR. HH. en la planilla y reserva las solicitudes pendientes del sistema.{% else %}Escala aplicada: de 6 meses a 5 años, 14 días; más de 5 a 10 años, 21 días; más de 10 a 20 años, 28 días; y más de 20 años, 35 días.{% endif %}</p>
+</div>
+{% endblock %}

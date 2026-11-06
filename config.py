@@ -20,3 +20,15 @@ class Config:
     # Configuración de archivos
     UPLOAD_FOLDER = os.environ.get('UPLOAD_FOLDER', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16 MB max limit
+
+    # Integracion Trilay (SQL Server, estrictamente solo lectura).
+    TRILAY_SYNC_ENABLED = os.environ.get('TRILAY_SYNC_ENABLED', 'false').lower() == 'true'
+    TRILAY_SQLSERVER_HOST = os.environ.get('TRILAY_SQLSERVER_HOST')
+    TRILAY_SQLSERVER_PORT = int(os.environ.get('TRILAY_SQLSERVER_PORT', '1433'))
+    TRILAY_SQLSERVER_DATABASE = os.environ.get('TRILAY_SQLSERVER_DATABASE', 'erp')
+    TRILAY_SQLSERVER_USER = os.environ.get('TRILAY_SQLSERVER_USER')
+    TRILAY_SQLSERVER_PASSWORD = os.environ.get('TRILAY_SQLSERVER_PASSWORD')
+    TRILAY_SQLSERVER_DRIVER = os.environ.get('TRILAY_SQLSERVER_DRIVER', 'ODBC Driver 18 for SQL Server')
+    TRILAY_SQLSERVER_ENCRYPT = os.environ.get('TRILAY_SQLSERVER_ENCRYPT', 'yes')
+    TRILAY_SQLSERVER_TRUST_CERTIFICATE = os.environ.get('TRILAY_SQLSERVER_TRUST_CERTIFICATE', 'no')
+    TRILAY_SYNC_INTERVAL_SECONDS = int(os.environ.get('TRILAY_SYNC_INTERVAL_SECONDS', '3600'))

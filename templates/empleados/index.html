@@ -16,10 +16,10 @@
 
 {% if busqueda %}<p class="search-result-copy"><strong>{{ empleados|length }}</strong> resultado{{ '' if empleados|length == 1 else 's' }} para “{{ busqueda }}”</p>{% endif %}
 
-<div class="card no-hover"><div class="table-responsive"><table class="table table-hover align-middle mb-0">
+<div class="card no-hover"><div class="table-responsive"><table class="table table-hover align-middle mb-0 employee-directory-table">
     <thead><tr><th>Legajo</th><th>Nombre y apellido</th><th>Empresa</th><th>Sector</th><th>Puesto</th><th>Estado</th><th class="text-end">Acciones</th></tr></thead>
     <tbody>{% for emp in empleados %}<tr>
-        <td><span class="employee-file-number">{{ emp.legajo or '-' }}</span></td>
+        <td><span class="employee-file-number{% if not emp.legajo %} missing{% endif %}">{{ emp.legajo or 'Sin legajo' }}</span></td>
         <td><div class="fw-semibold">{{ emp.nombre_apellido }}</div><div class="text-muted small">DNI {{ emp.dni }}{% if emp.cuil %} · CUIL {{ emp.cuil }}{% endif %}</div></td>
         <td>{{ emp.empresa.nombre if emp.empresa else '-' }}</td><td>{{ emp.sector.nombre if emp.sector else '-' }}</td><td>{{ emp.puesto.nombre if emp.puesto else '-' }}</td>
         <td>{% if emp.estado == 'Activo' %}<span class="badge bg-success-subtle text-success">Activo</span>{% elif emp.estado == 'Licencia' %}<span class="badge bg-warning-subtle text-warning-emphasis">Licencia</span>{% else %}<span class="badge bg-secondary-subtle text-secondary">{{ emp.estado }}</span>{% endif %}</td>

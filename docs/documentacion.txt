@@ -1,0 +1,209 @@
+Actualmente tenemos una aplicación web interna de Recursos Humanos desarrollada a medida para Talca.
+Infraestructura técnica
+Aplicación
+- Backend desarrollado en Python con Flask.
+- Arquitectura modular mediante blueprints:
+  - Autenticación.
+  - Dashboard.
+  - Empleados.
+  - Vacaciones y licencias.
+  - Horas extra.
+  - Noticias.
+  - Documentos.
+  - Sanciones.
+  - Notificaciones.
+  - Administración.
+- Frontend renderizado con Jinja, HTML, Bootstrap, CSS y JavaScript.
+- Diseño responsive para computadoras y celulares.
+- Modo claro y oscuro.
+- Identidad visual adaptada a Talca.
+Base de datos
+- Base principal en PostgreSQL.
+- Acceso mediante SQLAlchemy.
+- Tablas dentro del esquema rrhh.
+- Información separada por módulos.
+- Relaciones entre usuarios, empleados, documentos, solicitudes y movimientos.
+- Migraciones SQL para cambios estructurales.
+Integración con Trilay
+- Conexión de solo lectura a SQL Server mediante pyodbc.
+- Consulta controlada de columnas autorizadas.
+- No se consulta ni copia la contraseña de Trilay.
+- Sincronización automática hacia PostgreSQL.
+- Ejecución programada cada hora.
+- La sincronización es unidireccional:
+Trilay → PostgreSQL → Portal RR. HH.
+- Si Trilay no está disponible, el portal puede continuar funcionando con la información previamente sincronizada.
+- Registro de última sincronización y procedencia de los datos.
+Archivos y documentos
+- Los metadatos se almacenan en PostgreSQL.
+- Los archivos se guardan actualmente en el almacenamiento configurado en el servidor.
+- Se organizan por módulo y empleado.
+- Existe separación entre:
+  - Documentación visible para el empleado.
+  - Documentación enviada a RR. HH.
+  - Archivo privado de RR. HH.
+  - Recibos de sueldo.
+  - Adjuntos de noticias y solicitudes.
+Para una instalación productiva definitiva convendría utilizar un almacenamiento centralizado con respaldos, permisos y políticas de conservación.
+Automatización
+- Tarea programada de Windows para sincronizar empleados.
+- Intervalo actual de una hora.
+- Scripts de importación controlada para nóminas y vacaciones.
+- Procesos idempotentes para evitar duplicaciones.
+- Registro de errores y resultados de sincronización.
+Seguridad
+El sistema cuenta con:
+- Inicio de sesión individual.
+- Contraseñas almacenadas mediante hash.
+- Cambio de contraseña desde el perfil.
+- Usuarios activables y desactivables.
+- Sesiones con tiempo máximo configurable.
+- Cierre administrativo de sesiones.
+- Roles y permisos por módulo y acción.
+- Validaciones de permisos también en backend.
+- Protección de cuentas administrativas.
+- Auditoría de operaciones.
+- Registro de usuario, fecha, endpoint, acción e IP.
+- Registro de errores internos.
+- Separación entre administrador operativo y administración técnica.
+- Restricción de documentos privados.
+Todavía corresponde definir para producción:
+- Certificado HTTPS.
+- Política formal de copias de seguridad.
+- Recuperación ante incidentes.
+- Cifrado y almacenamiento documental definitivo.
+- Política de conservación de archivos.
+- Firma electrónica validada por Legales.
+Roles actuales
+Empleado
+Puede:
+- Ingresar con su cuenta.
+- Consultar y editar información personal.
+- Cambiar su contraseña y fotografía.
+- Consultar licencias.
+- Solicitar licencias.
+- Consultar vacaciones y saldo.
+- Consultar horas extra.
+- Ver noticias.
+- Consultar documentos y recibos.
+- Enviar documentación a RR. HH.
+- Consultar notificaciones.
+- Utilizar checklist y calendario.
+- Ver cumpleaños y fechas importantes.
+Recursos Humanos
+Puede:
+- Consultar el dashboard de gestión.
+- Administrar empleados.
+- Revisar licencias.
+- Gestionar horas extra.
+- Aplicar y consultar sanciones.
+- Publicar noticias.
+- Consultar documentos recibidos.
+- Administrar legajos digitales.
+- Mantener un archivo documental privado.
+- Gestionar recibos de sueldo.
+- Consultar cumpleaños y fechas importantes.
+- Utilizar checklist y calendario.
+- Recibir notificaciones de nuevas gestiones.
+Administrador
+Además de acceder a los módulos operativos, puede:
+- Crear y editar usuarios.
+- Activar y desactivar cuentas.
+- Restablecer contraseñas.
+- Asignar permisos.
+- Consultar auditorías.
+- Consultar actividad del sistema.
+- Revisar errores registrados.
+- Configurar seguridad y sesiones.
+- Consultar sesiones activas y cerrarlas.
+- Consultar información técnica del sistema.
+Funcionalidades principales
+Dashboard
+- Panel diferenciado según el rol.
+- Noticias destacadas.
+- Licencias pendientes.
+- Horas extra pendientes.
+- Documentos recibidos.
+- Sanciones vigentes.
+- Recibos pendientes.
+- Próximos cumpleaños.
+- Fechas importantes y feriados.
+- Calendario mensual.
+- Checklist personal.
+- Notificaciones.
+- Accesos rápidos.
+Vacaciones
+- Cálculo de días según antigüedad.
+- Saldo almacenado en PostgreSQL.
+- Importación del historial entregado por RR. HH.
+- Consulta de días correspondientes.
+- Días utilizados y reservados.
+- Saldo disponible.
+- Historial de movimientos.
+- Identificación de fecha de corte y origen del saldo.
+Todavía falta incorporar el circuito Supervisor → RR. HH.
+Licencias
+- Solicitud digital.
+- Selección del tipo de licencia.
+- Fechas y cantidad de días.
+- Motivo y archivo adjunto.
+- Aprobación o rechazo.
+- Observaciones de RR. HH.
+- Notificaciones al empleado.
+- Historial de solicitudes.
+Documentación y legajos
+- Documentos organizados por empleado.
+- Envío de documentos a RR. HH.
+- Carpetas individuales.
+- Documentos privados de RR. HH.
+- Adjuntos y descarga.
+- Registro de quién cargó cada archivo.
+- Recibos de sueldo con conformidad o rechazo.
+Noticias y comunicaciones
+- Publicación y edición de noticias.
+- Imagen y archivos adjuntos.
+- Destinatarios generales o segmentados.
+- Noticias vinculadas con fechas importantes.
+- Visualización destacada durante un período limitado.
+- Historial de publicaciones.
+- Notificaciones asociadas.
+Información personal
+- Consulta y edición del perfil.
+- Datos personales y laborales.
+- Domicilio y contacto.
+- Contactos de emergencia.
+- Fotografía.
+- Cambio de contraseña.
+Actualmente algunos cambios se aplican directamente; el informe de RR. HH. plantea incorporar un circuito de aprobación.
+Notificaciones
+- Centro de notificaciones para todos los usuarios.
+- Contador de no leídas.
+- Notificaciones por:
+  - Licencias.
+  - Sanciones.
+  - Documentos.
+  - Noticias.
+  - Horas extra.
+  - Cumpleaños.
+  - Recibos.
+- Acceso desde el encabezado y página completa.
+Auditoría y administración
+- Seguimiento de operaciones.
+- Filtros por usuario, módulo y acción.
+- Reportes de actividad.
+- Exportación.
+- Revisión de errores.
+- Configuración de contraseñas y sesiones.
+- Control de cuentas protegidas.
+Estado general
+El proyecto ya funciona como un portal interno de RR. HH. con módulos operativos, base de datos, usuarios, documentos, solicitudes, comunicación y auditoría.
+No es solamente un prototipo visual: tiene persistencia en PostgreSQL, autenticación, permisos, carga de archivos e integración con un sistema externo.
+Para alinearlo completamente con el informe de la gerente faltan principalmente:
+- Rol y asignación de supervisores.
+- Aprobaciones en varias etapas.
+- Bandeja unificada “Mis solicitudes”.
+- Legajo de ingreso con documentación obligatoria.
+- Cambios personales sujetos a validación.
+- Registro obligatorio de lectura.
+- Firma electrónica validada legalmente.
+- Infraestructura productiva de respaldos, almacenamiento y recuperación.

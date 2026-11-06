@@ -96,6 +96,7 @@ class Usuario(db.Model, UserMixin):
     
     id = db.Column(db.Integer, primary_key=True)
     empleado_id = db.Column(db.Integer, db.ForeignKey('rrhh.empleados.id'))
+    empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id'))
     rol_id = db.Column(db.Integer, db.ForeignKey('rrhh.roles.id'), nullable=False)
     usuario = db.Column(db.String(100), unique=True, nullable=False)
     nombre_mostrar = db.Column(db.String(150))
@@ -104,10 +105,12 @@ class Usuario(db.Model, UserMixin):
     cuenta_protegida = db.Column(db.Boolean, default=False, nullable=False)
     password_hash = db.Column(db.Text, nullable=False)
     activo = db.Column(db.Boolean, default=True)
+    debe_cambiar_password = db.Column(db.Boolean, default=False, nullable=False)
     ultimo_acceso = db.Column(db.DateTime)
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
     empleado = db.relationship('Empleado')
+    empleado2 = db.relationship('Empleado2', foreign_keys=[empleado2_id])
 
 class Familiar(db.Model):
     __tablename__ = 'familiares'
@@ -427,3 +430,101 @@ class SesionUsuario(db.Model):
     cerrada_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
     motivo_cierre = db.Column(db.String(200))
     usuario = db.relationship('Usuario', foreign_keys=[usuario_id], backref=db.backref('sesiones', lazy=True, cascade='all, delete-orphan'))
+
+
+class Empleado2(db.Model):
+    """Replica limpia de Trilay; no reemplaza ni modifica rrhh.empleados."""
+    __tablename__ = 'empleados2'
+    __table_args__ = {'schema': 'rrhh'}
+    id = db.Column(db.BigInteger, primary_key=True)
+    id_usuario = db.Column(db.Integer, unique=True, nullable=True, index=True)
+    cod_usuario = db.Column(db.String(20))
+    telefono = db.Column(db.String(100)); telefono_alternativo = db.Column(db.String(15)); telefono_otro = db.Column(db.String(50))
+    correo = db.Column(db.String(120)); correo_alternativo = db.Column(db.String(120))
+    tipo_documento = db.Column(db.String(20)); numero_documento = db.Column(db.String(100)); sexo = db.Column(db.String(50))
+    nivel = db.Column(db.String(100)); numero_nivel = db.Column(db.Integer); nombre = db.Column(db.String(50)); apellido = db.Column(db.String(250))
+    codigo_jerarquia_superior = db.Column(db.Integer); numero_legajo = db.Column(db.String(100)); estado_salud = db.Column(db.String(1))
+    codigo_dato_empleado = db.Column(db.Integer); cuil = db.Column(db.String(100)); numero_jubilacion = db.Column(db.String(10))
+    foto = db.Column(db.String(100)); estado = db.Column(db.Integer); razon = db.Column(db.String(100)); nacionalidad = db.Column(db.String(50))
+    fecha_nacimiento = db.Column(db.Date); fecha_ingreso = db.Column(db.Date); fecha_egreso = db.Column(db.Date)
+    codigo_estado_civil = db.Column(db.Integer); calle = db.Column(db.String(30)); numero_casa = db.Column(db.String(10))
+    numero_departamento = db.Column(db.String(10)); manzana = db.Column(db.String(10)); barrio = db.Column(db.String(30))
+    torre = db.Column(db.String(15)); piso = db.Column(db.String(20)); pais = db.Column(db.String(50)); localidad = db.Column(db.String(70))
+    provincia = db.Column(db.String(100)); telefono_laboral = db.Column(db.String(100)); horas_extra = db.Column(db.Float); horas_normales = db.Column(db.Float)
+    codigo_jerarquia = db.Column(db.Integer); codigo_pais = db.Column(db.Integer); codigo_tipo_documento = db.Column(db.Integer)
+    nombre_documento = db.Column(db.String(20)); curp = db.Column(db.String(15)); numero_seguro_social = db.Column(db.String(50))
+    fecha_efectivizacion = db.Column(db.Date); codigo_localidad = db.Column(db.Integer); codigo_provincia = db.Column(db.Integer)
+    jerarquia_padre = db.Column(db.Integer); huella_origen = db.Column(db.String(64), nullable=False)
+    presente_en_origen = db.Column(db.Boolean, nullable=False, default=True); ultima_sincronizacion = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    nombre_completo = db.Column(db.String(350)); nivel_estudios = db.Column(db.String(150)); grupo_sanguineo = db.Column(db.String(20)); pasaporte = db.Column(db.String(50))
+    domicilio = db.Column(db.String(300)); codigo_postal = db.Column(db.String(20)); antiguedad_registrada = db.Column(db.String(100))
+    categoria_laboral = db.Column(db.String(150)); codigo_categoria = db.Column(db.String(50)); contrato = db.Column(db.String(100))
+    jornada_laboral = db.Column(db.String(100)); horas_jornada = db.Column(db.Numeric(8, 2)); situacion_laboral = db.Column(db.String(100))
+    empresa = db.Column(db.String(150)); departamento_area = db.Column(db.String(150)); sector = db.Column(db.String(150)); puesto = db.Column(db.String(150))
+    rol_laboral = db.Column(db.String(150)); supervisor = db.Column(db.String(200)); ubicacion_principal = db.Column(db.String(200)); gremio = db.Column(db.String(150))
+    movilidad_empleado = db.Column(db.String(100)); licencia_conducir = db.Column(db.String(100))
+    sueldo = db.Column(db.Numeric(16, 2)); banco = db.Column(db.String(150)); cuenta_bancaria = db.Column(db.String(100)); cbu = db.Column(db.String(50))
+    alias_bancario = db.Column(db.String(100)); moneda = db.Column(db.String(100)); forma_pago = db.Column(db.String(100)); obra_social = db.Column(db.String(150))
+    indicador_jubilado = db.Column(db.Boolean); contacto_emergencia_nombre = db.Column(db.String(200)); contacto_emergencia_telefono = db.Column(db.String(100))
+    contacto_emergencia_correo = db.Column(db.String(150)); contacto_emergencia_dni = db.Column(db.String(30)); marcacion_web = db.Column(db.Boolean)
+    acceso_plataforma_web = db.Column(db.Boolean); id_empleado_postgresql = db.Column(db.Integer); fuentes_origen = db.Column(db.String(250))
+    cantidad_fuentes = db.Column(db.Integer); nomina_referencia = db.Column(db.String(500), unique=True); estado_vinculacion = db.Column(db.String(100))
+    cantidad_conflictos = db.Column(db.Integer); observaciones_integracion = db.Column(db.Text); origen_nomina = db.Column(db.Boolean, nullable=False, default=False)
+    nomina_actualizada_en = db.Column(db.DateTime)
+
+
+class VacacionSaldo(db.Model):
+    """Saldo vacacional consolidado por empleado y período de cálculo."""
+    __tablename__ = 'vacaciones_saldos'
+    __table_args__ = (
+        db.UniqueConstraint('empleado2_id', 'periodo', name='uq_vacaciones_saldo_empleado_periodo'),
+        {'schema': 'rrhh'},
+    )
+
+    id = db.Column(db.BigInteger, primary_key=True)
+    empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id', ondelete='CASCADE'), nullable=False, index=True)
+    periodo = db.Column(db.Integer, nullable=False, index=True)
+    fecha_ingreso_calculo = db.Column(db.Date)
+    antiguedad_meses = db.Column(db.Integer)
+    dias_correspondientes = db.Column(db.Numeric(8, 2), nullable=False, default=0)
+    saldo_base = db.Column(db.Numeric(8, 2), nullable=False, default=0)
+    ajustes = db.Column(db.Numeric(8, 2), nullable=False, default=0)
+    saldo_disponible = db.Column(db.Numeric(8, 2), nullable=False, default=0)
+    origen = db.Column(db.String(30), nullable=False, default='CALCULO')
+    fila_excel = db.Column(db.Integer)
+    fecha_corte = db.Column(db.Date)
+    observaciones = db.Column(db.Text)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    actualizado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    empleado2 = db.relationship('Empleado2', backref=db.backref('saldos_vacaciones', lazy=True, cascade='all, delete-orphan'))
+
+
+class VacacionMovimiento(db.Model):
+    """Historial importado y operativo que explica el saldo vacacional."""
+    __tablename__ = 'vacaciones_movimientos'
+    __table_args__ = (
+        db.UniqueConstraint('origen', 'referencia_origen', name='uq_vacaciones_movimiento_origen'),
+        {'schema': 'rrhh'},
+    )
+
+    id = db.Column(db.BigInteger, primary_key=True)
+    empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id', ondelete='CASCADE'), nullable=False, index=True)
+    saldo_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.vacaciones_saldos.id', ondelete='SET NULL'))
+    licencia_id = db.Column(db.Integer, db.ForeignKey('rrhh.licencias.id', ondelete='SET NULL'))
+    tipo = db.Column(db.String(40), nullable=False)
+    fecha_desde = db.Column(db.Date)
+    fecha_hasta = db.Column(db.Date)
+    fecha_reintegro = db.Column(db.Date)
+    dias = db.Column(db.Numeric(8, 2), nullable=False, default=0)
+    saldo_resultante = db.Column(db.Numeric(8, 2))
+    detalle = db.Column(db.Text)
+    observaciones = db.Column(db.Text)
+    origen = db.Column(db.String(30), nullable=False, default='SISTEMA')
+    referencia_origen = db.Column(db.String(100), nullable=False)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    empleado2 = db.relationship('Empleado2', backref=db.backref('movimientos_vacaciones', lazy=True, cascade='all, delete-orphan'))
+    saldo = db.relationship('VacacionSaldo', backref=db.backref('movimientos', lazy=True))
+    licencia = db.relationship('Licencia')

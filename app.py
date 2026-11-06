@@ -31,6 +31,9 @@ def create_app(config_class=Config):
     
     from modules.licencias.routes import licencias_bp
     app.register_blueprint(licencias_bp)
+
+    from modules.vacaciones.routes import vacaciones_bp
+    app.register_blueprint(vacaciones_bp)
     
     from modules.horas_extra.routes import horas_extra_bp
     app.register_blueprint(horas_extra_bp)

@@ -10,3 +10,4 @@ Flask-SQLAlchemy
 openpyxl
 pandas
 email-validator
+pyodbc

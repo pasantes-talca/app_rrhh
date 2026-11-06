@@ -9,6 +9,7 @@
       <div class="profile-photo" id="profilePhotoPreview">{% if current_user.foto_perfil %}<img src="{{ url_for('auth.foto_perfil') }}" alt="Tu foto de perfil">{% else %}<span>{{ (current_user.nombre_mostrar or current_user.usuario)[:1]|upper }}</span>{% endif %}</div>
       <h2>{{ current_user.nombre_mostrar or (empleado.nombre_apellido if empleado else current_user.usuario) }}</h2>
       <p>{{ current_user.rol.nombre|replace('_', ' ')|title }}</p>
+      {% if empleado2 %}<small>Usuario de acceso: <strong>{{ empleado2.cod_usuario }}</strong></small>{% endif %}
       <label class="btn btn-outline-primary profile-upload" for="foto"><i class="bi bi-camera"></i> Cambiar foto</label>
       {{ form.foto(class="visually-hidden", id="foto", accept="image/jpeg,image/png,image/webp") }}
       <small>JPG, PNG o WEBP. Máximo 5 MB.</small>
@@ -28,16 +29,38 @@
         <div class="col-md-3">{{ form.codigo_postal.label(class="form-label") }}{{ form.codigo_postal(class="form-control") }}</div>
         <div class="col-md-4">{{ form.licencia_conducir.label(class="form-label") }}{{ form.licencia_conducir(class="form-control") }}</div>
       </div>
-      <div class="profile-section-head work-data-head"><span class="profile-section-icon neutral"><i class="bi bi-briefcase"></i></span><div><h2>Información laboral</h2><p>La administra RR. HH. para evitar cambios accidentales.</p></div></div>
-      <div class="profile-readonly-grid">
-        <div><span>Usuario</span><strong>{{ current_user.usuario }}</strong></div><div><span>Legajo</span><strong>{{ empleado.legajo if empleado and empleado.legajo else 'Sin informar' }}</strong></div>
-        <div><span>DNI</span><strong>{{ empleado.dni if empleado and empleado.dni else 'Sin informar' }}</strong></div><div><span>CUIL</span><strong>{{ empleado.cuil if empleado and empleado.cuil else 'Sin informar' }}</strong></div>
-        <div><span>Empresa</span><strong>{{ empleado.empresa.nombre if empleado and empleado.empresa else 'Sin informar' }}</strong></div><div><span>Sector</span><strong>{{ empleado.sector.nombre if empleado and empleado.sector else 'Sin informar' }}</strong></div>
-        <div><span>Puesto</span><strong>{{ empleado.puesto.nombre if empleado and empleado.puesto else 'Sin informar' }}</strong></div><div><span>Estado</span><strong>{{ empleado.estado if empleado and empleado.estado else ('Activo' if current_user.activo else 'Inactivo') }}</strong></div>
+      <div class="profile-section-head work-data-head"><span class="profile-section-icon neutral"><i class="bi bi-briefcase"></i></span><div><h2>Identificación e información laboral</h2><p>Revisá cuidadosamente estos datos antes de guardar.</p></div></div>
+      {% if empleado %}
+      <div class="row g-3">
+        <div class="col-md-4">{{ form.dni.label(class="form-label") }}{{ form.dni(class="form-control") }}{% for error in form.dni.errors %}<div class="profile-error">{{ error }}</div>{% endfor %}</div>
+        <div class="col-md-4">{{ form.cuil.label(class="form-label") }}{{ form.cuil(class="form-control") }}{% for error in form.cuil.errors %}<div class="profile-error">{{ error }}</div>{% endfor %}</div>
+        <div class="col-md-4">{{ form.legajo.label(class="form-label") }}{{ form.legajo(class="form-control") }}{% for error in form.legajo.errors %}<div class="profile-error">{{ error }}</div>{% endfor %}<small class="text-muted">Si lo cambiás, este será tu usuario en el próximo ingreso.</small></div>
+        <div class="col-md-4">{{ form.empresa_id.label(class="form-label") }}{{ form.empresa_id(class="form-select") }}</div>
+        <div class="col-md-4">{{ form.sector_id.label(class="form-label") }}{{ form.sector_id(class="form-select") }}</div>
+        <div class="col-md-4">{{ form.puesto_id.label(class="form-label") }}{{ form.puesto_id(class="form-select") }}</div>
+        <div class="col-md-6">{{ form.supervisor_id.label(class="form-label") }}{{ form.supervisor_id(class="form-select employee-searchable") }}</div>
+        <div class="col-md-6">{{ form.jornada_id.label(class="form-label") }}{{ form.jornada_id(class="form-select") }}</div>
+        <div class="col-md-4">{{ form.jornada_horas.label(class="form-label") }}{{ form.jornada_horas(class="form-control", min="0", step="0.5") }}</div>
+        <div class="col-md-4">{{ form.fecha_ingreso.label(class="form-label") }}{{ form.fecha_ingreso(class="form-control", type="date") }}</div>
+        <div class="col-md-4">{{ form.estado.label(class="form-label") }}{{ form.estado(class="form-select") }}</div>
       </div>
+      {% else %}
+      <div class="profile-readonly-grid"><div><span>Usuario</span><strong>{{ current_user.usuario }}</strong></div><div><span>Rol</span><strong>{{ current_user.rol.nombre|replace('_',' ')|title }}</strong></div></div>
+      {% endif %}
       <div class="profile-actions">{{ form.submit(class="btn btn-primary") }}</div>
     </section>
   </form>
+  <section class="card profile-form-card mt-4">
+    <div class="profile-section-head"><span class="profile-section-icon neutral"><i class="bi bi-shield-lock"></i></span><div><h2>Seguridad de la cuenta</h2><p>Cambiá tu contraseña personal. Nunca se mostrará ni se almacenará en texto plano.</p></div></div>
+    {% if current_user.debe_cambiar_password %}<div class="alert alert-warning">Estás usando una contraseña temporal. Te recomendamos cambiarla.</div>{% endif %}
+    <form method="POST" action="{{ url_for('auth.cambiar_password') }}" class="row g-3">
+      {{ password_form.hidden_tag() }}
+      <div class="col-md-4">{{ password_form.password_actual.label(class="form-label") }}{{ password_form.password_actual(class="form-control", autocomplete="current-password") }}</div>
+      <div class="col-md-4">{{ password_form.password_nueva.label(class="form-label") }}{{ password_form.password_nueva(class="form-control", autocomplete="new-password") }}<small class="text-muted">Mínimo 8 caracteres.</small></div>
+      <div class="col-md-4">{{ password_form.confirmar_password.label(class="form-label") }}{{ password_form.confirmar_password(class="form-control", autocomplete="new-password") }}</div>
+      <div class="col-12 d-flex justify-content-end">{{ password_form.submit_password(class="btn btn-primary") }}</div>
+    </form>
+  </section>
 </div>
 <script>
 document.getElementById('foto')?.addEventListener('change', function () {
