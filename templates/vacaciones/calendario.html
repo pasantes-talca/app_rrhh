@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Calendario de vacaciones · Talca Personas{% endblock %}
+
+{% block content %}
+<div class="vacation-calendar-page">
+  <header class="vacation-heading">
+    <div>
+      <span class="eyebrow">{% if gestion %}GESTIÓN DE PERSONAS{% else %}MI CUENTA{% endif %}</span>
+      <h1>{% if gestion %}Calendario de vacaciones{% else %}Mi calendario de vacaciones{% endif %}</h1>
+      <p>{% if gestion %}Vacaciones históricas y solicitudes de todos los empleados.{% else %}Tus vacaciones históricas y solicitudes registradas.{% endif %}</p>
+    </div>
+    <a href="{{ url_for('vacaciones.index') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver a saldos</a>
+  </header>
+
+  {% if gestion %}
+  <form method="GET" class="card no-hover vacation-calendar-filter">
+    <input type="hidden" name="anio" value="{{ fecha_mes.year }}">
+    <input type="hidden" name="mes" value="{{ fecha_mes.month }}">
+    <div class="input-group"><span class="input-group-text"><i class="bi bi-search"></i></span><input class="form-control" name="q" value="{{ busqueda }}" placeholder="Buscar por nombre o legajo"><button class="btn btn-primary">Buscar</button>{% if busqueda %}<a class="btn btn-outline-secondary" href="{{ url_for('vacaciones.calendario_vacaciones', anio=fecha_mes.year, mes=fecha_mes.month) }}">Limpiar</a>{% endif %}</div>
+  </form>
+  {% endif %}
+
+  <section class="card no-hover vacation-calendar-card">
+    <div class="vacation-calendar-head">
+      <a class="calendar-nav" href="{{ url_for('vacaciones.calendario_vacaciones', anio=anterior.year, mes=anterior.month, q=busqueda) }}" aria-label="Mes anterior"><i class="bi bi-chevron-left"></i></a>
+      <div><h2>{{ nombre_mes }} {{ fecha_mes.year }}</h2><p>{{ eventos|length }} período{% if eventos|length != 1 %}s{% endif %}{% if gestion %} · {{ cantidad_personas }} empleado{% if cantidad_personas != 1 %}s{% endif %}{% endif %}</p></div>
+      <a class="calendar-nav" href="{{ url_for('vacaciones.calendario_vacaciones', anio=siguiente.year, mes=siguiente.month, q=busqueda) }}" aria-label="Mes siguiente"><i class="bi bi-chevron-right"></i></a>
+    </div>
+    <div class="vacation-calendar-legend"><span><i class="historica"></i> Histórica</span><span><i class="aprobada"></i> Aprobada</span><span><i class="pendiente"></i> Pendiente</span><span><i class="rechazada"></i> Rechazada</span></div>
+    <div class="vacation-calendar-scroll">
+      <div class="vacation-calendar-grid weekdays">{% for dia in ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] %}<div>{{ dia }}</div>{% endfor %}</div>
+      <div class="vacation-calendar-grid month">
+        {% for semana in semanas %}{% for dia in semana %}
+        <div class="vacation-calendar-day {% if not dia.del_mes %}outside{% endif %} {% if dia.es_hoy %}today{% endif %}">
+          <span class="day-number">{{ dia.numero }}</span>
+          <div class="day-events">
+            {% for evento in dia.eventos[:3] %}
+            <button type="button" class="vacation-event {{ evento.clase }}" data-bs-toggle="modal" data-bs-target="#evento-{{ evento.clave }}" title="{{ evento.nombre }}">{% if gestion %}{{ evento.nombre }}{% else %}{{ evento.estado }}{% endif %}</button>
+            {% endfor %}
+            {% if dia.eventos|length > 3 %}<span class="more-events">+{{ dia.eventos|length - 3 }} más</span>{% endif %}
+          </div>
+        </div>
+        {% endfor %}{% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <section class="card no-hover vacation-list-card mt-3">
+    <div class="card-header"><div><h2>Períodos del mes</h2><p>Detalle de vacaciones visibles en {{ nombre_mes|lower }}</p></div></div>
+    <div class="activity-list">
+      {% for evento in eventos %}
+      <button type="button" class="activity-row vacation-list-row" data-bs-toggle="modal" data-bs-target="#evento-{{ evento.clave }}"><span class="activity-avatar"><i class="bi bi-calendar-range"></i></span><span class="activity-main"><strong>{{ evento.nombre }}</strong><small>{% if evento.legajo %}Legajo {{ evento.legajo }} · {% endif %}{{ evento.desde.strftime('%d/%m/%Y') }} al {{ evento.hasta.strftime('%d/%m/%Y') }}</small></span><span class="vacation-status {{ evento.clase }}">{{ evento.estado }}</span><i class="bi bi-chevron-right"></i></button>
+      {% else %}<div class="empty-dashboard"><i class="bi bi-calendar-x"></i><strong>Sin vacaciones en este mes</strong><span>{% if busqueda %}No encontramos períodos para esa búsqueda.{% else %}No hay movimientos registrados para el período seleccionado.{% endif %}</span></div>{% endfor %}
+    </div>
+  </section>
+</div>
+
+{% for evento in eventos %}
+<div class="modal fade" id="evento-{{ evento.clave }}" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content vacation-modal"><div class="modal-header"><div><span class="vacation-status {{ evento.clase }}">{{ evento.estado }}</span><h2>{{ evento.nombre }}</h2></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><dl><div><dt>Legajo</dt><dd>{{ evento.legajo or 'Sin informar' }}</dd></div><div><dt>Desde</dt><dd>{{ evento.desde.strftime('%d/%m/%Y') }}</dd></div><div><dt>Hasta</dt><dd>{{ evento.hasta.strftime('%d/%m/%Y') }}</dd></div><div><dt>Días</dt><dd>{{ evento.dias|int }}</dd></div></dl>{% if evento.fecha_inconsistente %}<div class="alert alert-warning small mt-3 mb-0"><i class="bi bi-exclamation-triangle me-1"></i> La fecha final original ({{ evento.hasta_original.strftime('%d/%m/%Y') }}) no coincide con los días informados y requiere revisión de RR. HH.</div>{% endif %}{% if evento.detalle %}<p>{{ evento.detalle }}</p>{% endif %}</div></div></div></div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% block title %}Ausentismo y vacaciones · Indicadores{% endblock %}
+{% block content %}
+<div class="indicator-topbar">
+  <div><a href="{{ url_for('indicadores.index') }}" class="indicator-back"><i class="bi bi-arrow-left"></i> Indicadores</a><span class="eyebrow">TABLERO GERENCIAL</span><h1>Ausentismo y vacaciones</h1><p>Información consolidada desde el control de ausentismo de Recursos Humanos.</p></div>
+  <span class="indicator-live"><i></i> Datos de PostgreSQL</span>
+</div>
+
+<div class="powerbi-canvas">
+<div class="powerbi-toolbar">
+<nav class="indicator-tabs">
+  {% for clave, etiqueta, icono in [('ausentismo','Ausentismo','bi-activity'),('tendencia','Tendencia','bi-graph-up'),('vacaciones','Vacaciones','bi-airplane')] %}
+  <a class="{% if vista == clave %}active{% endif %}" href="{{ url_for('indicadores.ausentismo', vista=clave, anio=anio, mes=mes, planta=planta) }}"><i class="bi {{ icono }}"></i>{{ etiqueta }}</a>
+  {% endfor %}
+</nav>
+
+<form class="indicator-filters" method="get">
+  <input type="hidden" name="vista" value="{{ vista }}">
+  <label><span>Año</span><select name="anio" class="form-select">{% for item in anios %}<option value="{{ item }}" {% if item == anio %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+  {% if vista != 'tendencia' %}<label><span>Mes</span><select name="mes" class="form-select"><option value="0">Año completo</option>{% for numero in range(1,13) %}<option value="{{ numero }}" {% if numero == mes %}selected{% endif %}>{{ meses[numero] }}</option>{% endfor %}</select></label>{% endif %}
+  <label><span>Planta</span><select name="planta" class="form-select"><option value="">Todas las plantas</option>{% for item in plantas %}<option {% if item == planta %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></label>
+  <button class="btn btn-primary"><i class="bi bi-funnel"></i> Aplicar</button>
+</form>
+</div>
+
+{% if vista == 'ausentismo' %}
+<div class="indicator-kpis six">
+  <article><i class="bi bi-people"></i><span>Empleados activos</span><strong>{{ resumen.empleados_activos }}</strong><small>Dotación del período</small></article>
+  <article><i class="bi bi-person-dash"></i><span>Con ausencias</span><strong>{{ resumen.empleados_ausentes }}</strong><small>{{ '%.1f'|format(resumen.empleados_ausentes / resumen.empleados_activos * 100 if resumen.empleados_activos else 0) }}% de la dotación</small></article>
+  <article><i class="bi bi-calendar2-x"></i><span>Días hábiles</span><strong>{{ resumen.dias_habiles }}</strong><small>Ausencias acumuladas</small></article>
+  <article class="primary"><i class="bi bi-speedometer2"></i><span>Tasa de ausentismo</span><strong>{{ '%.2f'|format(resumen.tasa) }}%</strong><small>Sobre capacidad laboral</small></article>
+  <article><i class="bi bi-exclamation-triangle"></i><span>Injustificadas</span><strong>{{ resumen.injustificadas }}</strong><small>Días hábiles</small></article>
+  <article><i class="bi bi-calculator"></i><span>Promedio por persona</span><strong>{{ '%.1f'|format(resumen.promedio) }}</strong><small>Días por empleado ausente</small></article>
+</div>
+<div class="indicator-grid">
+  <section class="indicator-panel"><header><div><small>DISTRIBUCIÓN</small><h2>Ausencias por categoría</h2></div><span>{{ resumen.dias_habiles }} días</span></header><div class="chart-wrap"><canvas id="categoryChart"></canvas></div></section>
+  <section class="indicator-panel"><header><div><small>PERSONAS</small><h2>Empleados con más días de ausencia</h2></div></header><div class="chart-wrap"><canvas id="peopleChart"></canvas></div></section>
+  <section class="indicator-panel"><header><div><small>ORGANIZACIÓN</small><h2>Tasa de ausentismo por área</h2></div></header><div class="chart-wrap"><canvas id="areaChart"></canvas></div></section>
+  <section class="indicator-panel"><header><div><small>COMPORTAMIENTO</small><h2>Ausencias por día de la semana</h2></div></header><div class="chart-wrap"><canvas id="weekChart"></canvas></div></section>
+</div>
+<section class="indicator-panel indicator-table-panel"><header><div><small>DETALLE</small><h2>Registros del período</h2></div><span>{{ resumen.detalle|length }} registros</span></header><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Empleado</th><th>Área / planta</th><th>Categoría</th><th>Período</th><th class="text-end">Días hábiles</th></tr></thead><tbody>{% for item in resumen.detalle[:100] %}<tr><td><strong>{{ item.nombre }}</strong><small>Legajo {{ item.legajo }}</small></td><td>{{ item.area }}<small>{{ item.planta }}</small></td><td><span class="indicator-category">{{ item.categoria }}</span><small>{{ item.descripcion }}</small></td><td>{{ item.desde.strftime('%d/%m/%Y') }} — {{ item.hasta.strftime('%d/%m/%Y') }}</td><td class="text-end fw-bold">{{ item.dias }}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-5">No hay ausencias para los filtros seleccionados.</td></tr>{% endfor %}</tbody></table></div></section>
+{% elif vista == 'tendencia' %}
+<div class="indicator-grid full">
+  <section class="indicator-panel"><header><div><small>EVOLUCIÓN MENSUAL</small><h2>Días de ausencia y tasa de ausentismo</h2></div></header><div class="chart-wrap tall"><canvas id="trendChart"></canvas></div></section>
+  <section class="indicator-panel"><header><div><small>MAPA DE CALOR</small><h2>Ausencias por mes y día de la semana</h2></div></header><div class="indicator-heatmap"><div></div>{% for dia in tendencia.dias_semana %}<strong>{{ dia }}</strong>{% endfor %}{% set maximo = tendencia.heatmap|map('max')|max if tendencia.heatmap else 1 %}{% for fila in tendencia.heatmap %}<span class="month">{{ tendencia.labels[loop.index0] }}</span>{% for valor in fila %}{% set intensidad = (valor / maximo) if maximo else 0 %}<span class="heat{% if intensidad > 0.55 %} heat-strong{% endif %}" style="background:rgba(229,34,42,{{ 0.08 + intensidad * 0.84 }})" title="{{ valor }} días">{{ valor }}</span>{% endfor %}{% endfor %}</div></section>
+</div>
+{% else %}
+<div class="indicator-kpis three"><article><i class="bi bi-airplane"></i><span>Personas en vacaciones</span><strong>{{ vacaciones.personas }}</strong><small>Durante el período</small></article><article class="primary"><i class="bi bi-percent"></i><span>Dotación en vacaciones</span><strong>{{ '%.2f'|format(vacaciones.porcentaje) }}%</strong><small>Sobre {{ vacaciones.dotacion }} empleados</small></article><article><i class="bi bi-building"></i><span>Áreas involucradas</span><strong>{{ vacaciones.areas_personas.labels|length }}</strong><small>Con vacaciones registradas</small></article></div>
+<div class="indicator-grid"><section class="indicator-panel"><header><div><small>PERSONAS</small><h2>Personas en vacaciones por área</h2></div></header><div class="chart-wrap tall"><canvas id="vacPeopleChart"></canvas></div></section><section class="indicator-panel"><header><div><small>COBERTURA</small><h2>Porcentaje del área en vacaciones</h2></div></header><div class="chart-wrap tall"><canvas id="vacPercentChart"></canvas></div></section></div>
+<section class="indicator-panel indicator-table-panel"><header><div><small>PLANIFICACIÓN</small><h2>Detalle de vacaciones</h2></div><span>{{ vacaciones.detalle|length }} períodos</span></header><div class="table-responsive"><table class="table align-middle mb-0"><thead><tr><th>Empleado</th><th>Área / planta</th><th>Inicio</th><th>Fin</th><th class="text-end">Días</th></tr></thead><tbody>{% for item in vacaciones.detalle %}<tr><td><strong>{{ item.nombre }}</strong><small>Legajo {{ item.legajo }}</small></td><td>{{ item.area }}<small>{{ item.planta }}</small></td><td>{{ item.desde.strftime('%d/%m/%Y') }}</td><td>{{ item.hasta.strftime('%d/%m/%Y') }}</td><td class="text-end fw-bold">{{ item.dias }}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-5">No hay vacaciones para los filtros seleccionados.</td></tr>{% endfor %}</tbody></table></div></section>
+{% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}{{ super() }}<script src="{{ url_for('static', filename='js/chart.umd.min.js') }}"></script><script>
+document.addEventListener('DOMContentLoaded',function(){
+  if(typeof Chart==='undefined')return;
+  const css=getComputedStyle(document.documentElement), text=css.getPropertyValue('--ink').trim()||'#20242c', grid=css.getPropertyValue('--line').trim()||'#e6e8ec';
+  Chart.defaults.color=text;Chart.defaults.font.family="Inter,Segoe UI,sans-serif";Chart.defaults.font.size=11;
+  const colors=['#e5222a','#f29e38','#2f80ed','#18a06b','#805ad5','#e35f94','#607080','#00a6b2','#b88a00'];
+  const base={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,padding:18}}},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:grid}}}};
+  const bar=(id,data,horizontal=false,suffix='')=>{
+    const el=document.getElementById(id);
+    if(!el)return;
+    new Chart(el,{
+      type:'bar',
+      data:{labels:data.labels,datasets:[{data:data.values,backgroundColor:colors[0],borderRadius:7,maxBarThickness:28}]},
+      options:{...base,indexAxis:horizontal?'y':'x',plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+suffix}}}}
+    });
+  };
+  {% if vista == 'ausentismo' %}
+  const cat={{ resumen.categorias|tojson }};
+  const centerValue={id:'centerValue',afterDraw(chart){const meta=chart.getDatasetMeta(0);if(!meta.data.length)return;const{x,y}=meta.data[0],ctx=chart.ctx,total=chart.data.datasets[0].data.reduce((a,b)=>a+b,0);ctx.save();ctx.textAlign='center';ctx.fillStyle=text;ctx.font='800 23px Montserrat, sans-serif';ctx.fillText(total,x,y-2);ctx.fillStyle=css.getPropertyValue('--muted').trim()||'#71696b';ctx.font='600 9px Inter, sans-serif';ctx.fillText('DÍAS',x,y+15);ctx.restore();}};
+  new Chart(document.getElementById('categoryChart'),{type:'doughnut',plugins:[centerValue],data:{labels:cat.labels,datasets:[{data:cat.values,backgroundColor:colors,borderColor:css.getPropertyValue('--surface').trim()||'#fff',borderWidth:3,hoverOffset:6}]},options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:14}}}}});
+  bar('peopleChart',{{ resumen.personas|tojson }},true,' días');bar('areaChart',{{ resumen.areas|tojson }},true,'%');bar('weekChart',{{ resumen.semana|tojson }});
+  {% elif vista == 'tendencia' %}
+  const trend={{ tendencia|tojson }};new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:trend.labels,datasets:[{label:'Días hábiles',data:trend.dias,borderColor:colors[0],backgroundColor:'rgba(229,34,42,.12)',fill:true,tension:.35,yAxisID:'y'},{label:'Tasa %',data:trend.tasas,borderColor:colors[2],backgroundColor:colors[2],tension:.35,yAxisID:'y1'}]},options:{...base,interaction:{mode:'index',intersect:false},scales:{x:{grid:{display:false}},y:{beginAtZero:true,grid:{color:grid},title:{display:true,text:'Días'}},y1:{beginAtZero:true,position:'right',grid:{display:false},title:{display:true,text:'Tasa %'}}}}});
+  {% else %}bar('vacPeopleChart',{{ vacaciones.areas_personas|tojson }},true);bar('vacPercentChart',{{ vacaciones.areas_porcentaje|tojson }},true,'%');{% endif %}
+});</script>{% endblock %}

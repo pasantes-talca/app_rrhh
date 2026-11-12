@@ -156,11 +156,39 @@ class Licencia(db.Model):
     aprobado_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
     fecha_resolucion = db.Column(db.DateTime)
     observacion_rrhh = db.Column(db.Text)
+    estado_supervisor = db.Column(db.String(30), nullable=False, default='No requerido')
+    supervisor_resuelto_por = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'))
+    fecha_resolucion_supervisor = db.Column(db.DateTime)
+    observacion_supervisor = db.Column(db.Text)
     creado_en = db.Column(db.DateTime, default=datetime.utcnow)
     
     empleado = db.relationship('Empleado', backref=db.backref('licencias', lazy=True))
     tipo_licencia = db.relationship('TipoLicencia')
     aprobador = db.relationship('Usuario', foreign_keys=[aprobado_por])
+    supervisor_aprobador = db.relationship('Usuario', foreign_keys=[supervisor_resuelto_por])
+
+
+class EmpleadoSupervisor(db.Model):
+    """Relación vigente entre un empleado de empleados2 y uno o más supervisores."""
+    __tablename__ = 'empleados_supervisores'
+    __table_args__ = (
+        db.UniqueConstraint('empleado2_id', 'supervisor_empleado2_id', name='uq_empleado_supervisor'),
+        db.CheckConstraint('empleado2_id <> supervisor_empleado2_id', name='ck_supervisor_no_autorreferencia'),
+        {'schema': 'rrhh'},
+    )
+
+    id = db.Column(db.BigInteger, primary_key=True)
+    empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id', ondelete='CASCADE'), nullable=False, index=True)
+    supervisor_empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id', ondelete='CASCADE'), nullable=False, index=True)
+    es_principal = db.Column(db.Boolean, nullable=False, default=False)
+    activo = db.Column(db.Boolean, nullable=False, default=True)
+    fecha_desde = db.Column(db.Date, nullable=False, default=datetime.utcnow)
+    fecha_hasta = db.Column(db.Date)
+    origen = db.Column(db.String(50), nullable=False, default='ORGANIGRAMA')
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    empleado = db.relationship('Empleado2', foreign_keys=[empleado2_id], backref=db.backref('relaciones_supervision', lazy=True))
+    supervisor = db.relationship('Empleado2', foreign_keys=[supervisor_empleado2_id], backref=db.backref('equipos_supervisados', lazy=True))
 
 class Noticia(db.Model):
     __tablename__ = 'noticias'
@@ -528,3 +556,69 @@ class VacacionMovimiento(db.Model):
     empleado2 = db.relationship('Empleado2', backref=db.backref('movimientos_vacaciones', lazy=True, cascade='all, delete-orphan'))
     saldo = db.relationship('VacacionSaldo', backref=db.backref('movimientos', lazy=True))
     licencia = db.relationship('Licencia')
+
+
+class TipoAusencia(db.Model):
+    """Catálogo de motivos utilizado por el control de ausentismo."""
+    __tablename__ = 'tipos_ausencia'
+    __table_args__ = {'schema': 'rrhh'}
+
+    codigo = db.Column(db.Integer, primary_key=True)
+    categoria = db.Column(db.String(100), nullable=False)
+    descripcion = db.Column(db.String(200), nullable=False)
+    impacto_productividad = db.Column(db.String(100))
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    actualizado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class AusentismoEmpleado(db.Model):
+    """Dimensión de personal utilizada por los indicadores de ausentismo."""
+    __tablename__ = 'ausentismo_empleados'
+    __table_args__ = {'schema': 'rrhh'}
+
+    id = db.Column(db.BigInteger, primary_key=True)
+    empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id', ondelete='SET NULL'), index=True)
+    legajo = db.Column(db.String(100), nullable=False, unique=True, index=True)
+    nombre = db.Column(db.String(350), nullable=False)
+    area = db.Column(db.String(150))
+    planta = db.Column(db.String(150), index=True)
+    fecha_ingreso = db.Column(db.Date)
+    fecha_baja = db.Column(db.Date)
+    fecha_nacimiento = db.Column(db.Date)
+    archivo_origen = db.Column(db.String(255))
+    fila_excel = db.Column(db.Integer)
+    actualizado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    empleado2 = db.relationship('Empleado2', backref=db.backref('dimension_ausentismo', uselist=False))
+
+
+class Ausencia(db.Model):
+    """Período de ausencia de un empleado, importado o cargado en el sistema."""
+    __tablename__ = 'ausencias'
+    __table_args__ = (
+        db.UniqueConstraint('origen', 'referencia_origen', name='uq_ausencias_origen_referencia'),
+        db.CheckConstraint('fecha_fin >= fecha_inicio', name='ck_ausencias_fechas'),
+        {'schema': 'rrhh'},
+    )
+
+    id = db.Column(db.BigInteger, primary_key=True)
+    empleado2_id = db.Column(db.BigInteger, db.ForeignKey('rrhh.empleados2.id', ondelete='RESTRICT'), nullable=True, index=True)
+    tipo_codigo = db.Column(db.Integer, db.ForeignKey('rrhh.tipos_ausencia.codigo', ondelete='RESTRICT'), nullable=False, index=True)
+    fecha_inicio = db.Column(db.Date, nullable=False, index=True)
+    fecha_fin = db.Column(db.Date, nullable=False, index=True)
+    dias_calendario = db.Column(db.Integer, nullable=False)
+    legajo_origen = db.Column(db.String(100), nullable=False)
+    nombre_origen = db.Column(db.String(350))
+    area_origen = db.Column(db.String(150))
+    planta_origen = db.Column(db.String(150))
+    tipo_descripcion_origen = db.Column(db.String(200))
+    origen = db.Column(db.String(30), nullable=False, default='SISTEMA')
+    referencia_origen = db.Column(db.String(150), nullable=False)
+    archivo_origen = db.Column(db.String(255))
+    fila_excel = db.Column(db.Integer)
+    observaciones_importacion = db.Column(db.Text)
+    creado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    actualizado_en = db.Column(db.DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    empleado2 = db.relationship('Empleado2', backref=db.backref('ausencias', lazy=True))
+    tipo = db.relationship('TipoAusencia', backref=db.backref('ausencias', lazy=True))

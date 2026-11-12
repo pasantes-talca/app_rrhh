@@ -70,6 +70,9 @@ def leer(id):
     destinos = {
         'licencia': ('licencias.ver', {'id': notificacion.referencia_id}),
         'licencia_rrhh': ('licencias.ver', {'id': notificacion.referencia_id}),
+        'licencia_supervisor': ('licencias.ver', {'id': notificacion.referencia_id}),
+        'licencia_supervisor_resultado': ('licencias.ver', {'id': notificacion.referencia_id}),
+        'licencia_sin_supervisor': ('licencias.ver', {'id': notificacion.referencia_id}),
         'documento': ('documentos.detalle', {'id': notificacion.referencia_id}),
         'documento_empleado': ('documentos.detalle', {'id': notificacion.referencia_id}),
         'noticia': ('noticias.muro', {}),

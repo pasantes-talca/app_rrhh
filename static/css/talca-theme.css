@@ -604,6 +604,9 @@ html[data-theme="dark"] .notification-page-icon.horas_extra {
 html[data-theme="dark"] .org-people{scrollbar-color:#665658 transparent}
 html[data-theme="dark"] .org-people::-webkit-scrollbar-thumb{background:#665658;background-clip:padding-box}
 html[data-theme="dark"] .org-people::-webkit-scrollbar-thumb:hover{background:#837174;background-clip:padding-box}
+html[data-theme="dark"] .org-area-icon,
+html[data-theme="dark"] .org-responsible{background:color-mix(in srgb,var(--org-accent) 18%,var(--surface))}
+html[data-theme="dark"] .org-responsible>span{background:color-mix(in srgb,var(--surface) 88%,white 12%)}
 
 /* Directorio de empleados: legajos y datos secundarios con contraste equilibrado. */
 html[data-theme="dark"] .employee-directory-table thead {

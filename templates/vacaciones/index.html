@@ -10,9 +10,7 @@
       <h1>Mis vacaciones</h1>
       <p>Consultá tus días disponibles y el detalle de tus solicitudes.</p>
     </div>
-    <a href="{{ url_for('licencias.nueva') }}" class="btn btn-primary">
-      <i class="bi bi-calendar-plus"></i> Solicitar vacaciones
-    </a>
+    <div class="d-flex flex-wrap gap-2"><a href="{{ url_for('vacaciones.calendario_vacaciones') }}" class="btn btn-outline-primary"><i class="bi bi-calendar3"></i> Ver calendario</a><a href="{{ url_for('licencias.nueva') }}" class="btn btn-primary"><i class="bi bi-calendar-plus"></i> Solicitar vacaciones</a></div>
   </header>
 
   {% if not fecha_ingreso %}

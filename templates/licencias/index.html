@@ -32,6 +32,13 @@
                         <td>{{ lic.fecha_hasta.strftime('%d/%m/%Y') }}</td>
                         <td>{{ lic.cantidad_dias }}</td>
                         <td>
+                            {% if lic.estado == 'Pendiente' and lic.estado_supervisor == 'Pendiente' %}
+                                <span class="badge bg-warning text-dark"><i class="bi bi-person-check"></i> Supervisor pendiente</span>
+                            {% elif lic.estado == 'Pendiente' and lic.estado_supervisor == 'Aprobada' %}
+                                <span class="badge bg-info text-dark"><i class="bi bi-people"></i> Pendiente RR. HH.</span>
+                            {% elif lic.estado_supervisor == 'Sin asignar' %}
+                                <span class="badge bg-secondary"><i class="bi bi-person-exclamation"></i> Sin supervisor</span>
+                            {% else %}
                             {% if lic.estado == 'Pendiente' %}
                                 <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i> Pendiente</span>
                             {% elif lic.estado == 'Aprobada' %}
@@ -40,7 +47,7 @@
                                 <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Rechazada</span>
                             {% else %}
                                 <span class="badge bg-secondary">{{ lic.estado }}</span>
-                            {% endif %}
+                            {% endif %}{% endif %}
                         </td>
                         <td>
                             <a href="{{ url_for('licencias.ver', id=lic.id) }}" class="btn btn-sm btn-outline-info" title="Ver detalle"><i class="bi bi-eye"></i> Ver</a>

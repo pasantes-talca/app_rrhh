@@ -34,6 +34,12 @@ def create_app(config_class=Config):
 
     from modules.vacaciones.routes import vacaciones_bp
     app.register_blueprint(vacaciones_bp)
+
+    from modules.ausentismo.routes import ausentismo_bp
+    app.register_blueprint(ausentismo_bp)
+
+    from modules.indicadores.routes import indicadores_bp
+    app.register_blueprint(indicadores_bp)
     
     from modules.horas_extra.routes import horas_extra_bp
     app.register_blueprint(horas_extra_bp)

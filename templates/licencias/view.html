@@ -57,6 +57,18 @@
     </div>
 
     <div class="col-md-5">
+        <div class="card shadow-sm border-0 mb-3">
+            <div class="card-header bg-white pt-3 pb-2 border-bottom-0"><h5 class="text-primary"><i class="bi bi-person-check me-2"></i>Aprobación de supervisión</h5></div>
+            <div class="card-body">
+                <p><strong>Estado:</strong> <span class="badge {% if licencia.estado_supervisor == 'Aprobada' %}bg-success{% elif licencia.estado_supervisor == 'Rechazada' %}bg-danger{% elif licencia.estado_supervisor == 'Pendiente' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">{{ licencia.estado_supervisor }}</span></p>
+                {% if licencia.supervisor_aprobador %}<small class="d-block text-muted mb-2">Respondió {{ licencia.supervisor_aprobador.nombre_mostrar or licencia.supervisor_aprobador.usuario }} · {{ licencia.fecha_resolucion_supervisor.strftime('%d/%m/%Y %H:%M') if licencia.fecha_resolucion_supervisor else '' }}</small>{% endif %}
+                {% if licencia.observacion_supervisor %}<p class="small">{{ licencia.observacion_supervisor }}</p>{% endif %}
+                {% if can_supervise %}<form method="post" action="{{ url_for('licencias.resolver_supervisor', id=licencia.id) }}">
+                    <label class="form-label" for="observacion-supervisor">Observación</label><textarea class="form-control" id="observacion-supervisor" name="observacion" rows="3"></textarea>
+                    <div class="d-flex gap-2 mt-3"><button class="btn btn-success" name="accion" value="Aprobada"><i class="bi bi-check-circle"></i> Aprobar y enviar a RR. HH.</button><button class="btn btn-outline-danger" name="accion" value="Rechazada"><i class="bi bi-x-circle"></i> Rechazar</button></div>
+                </form>{% endif %}
+            </div>
+        </div>
         <div class="card shadow-sm border-0">
             <div class="card-header bg-white pt-3 pb-2 border-bottom-0">
                 <h5 class="text-primary"><i class="bi bi-shield-check me-2"></i>Resolución (RRHH)</h5>
@@ -109,6 +121,7 @@
                         </div>
                     </form>
                 {% endif %}
+                {% if current_user.rol.nombre in ['administrador', 'recursos_humanos'] and licencia.estado == 'Pendiente' and not can_resolve %}<div class="alert alert-info mb-0"><i class="bi bi-hourglass-split"></i> RR. HH. podrá resolver cuando Supervisión apruebe la solicitud.</div>{% endif %}
             </div>
         </div>
     </div>

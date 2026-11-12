@@ -25,7 +25,12 @@ def _config(clave, defecto):
 
 def _opciones_usuario(form):
     form.empleado_id.choices = [(0, 'Sin empleado asociado')] + [(e.id, f'{e.nombre_apellido} · {e.legajo or "sin legajo"}') for e in Empleado.query.order_by(Empleado.nombre_apellido).all()]
-    form.rol_id.choices = [(r.id, r.nombre.replace('_', ' ').title()) for r in Rol.query.filter(Rol.nombre.in_(['empleado', 'recursos_humanos'])).order_by(Rol.nombre).all()]
+    form.rol_id.choices = [
+        (r.id, r.nombre.replace('_', ' ').title())
+        for r in Rol.query.filter(Rol.nombre.in_([
+            'empleado', 'supervisor', 'recursos_humanos', 'gerencia'
+        ])).order_by(Rol.nombre).all()
+    ]
 
 
 def _editable(usuario):

@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Ausentismo · Talca Personas{% endblock %}
+{% block content %}
+<div class="page-heading d-flex flex-wrap justify-content-between align-items-start gap-3">
+  <div><span class="eyebrow">GESTIÓN DE PERSONAS</span><h1>Control de ausentismo</h1><p>Consulta consolidada de ausencias por empleado, período, tipo y planta.</p></div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-4"><div class="card no-hover h-100"><div class="card-body"><small class="text-muted">Registros del período</small><div class="fs-2 fw-bold">{{ total_registros }}</div></div></div></div>
+  <div class="col-md-4"><div class="card no-hover h-100"><div class="card-body"><small class="text-muted">Personas con ausencias</small><div class="fs-2 fw-bold">{{ total_personas }}</div></div></div></div>
+  <div class="col-md-4"><div class="card no-hover h-100"><div class="card-body"><small class="text-muted">Días calendario informados</small><div class="fs-2 fw-bold">{{ total_dias }}</div></div></div></div>
+</div>
+
+<form method="get" class="card no-hover mb-4"><div class="card-body"><div class="row g-3 align-items-end">
+  <div class="col-lg-4"><label class="form-label">Empleado</label><input class="form-control" name="q" value="{{ q }}" placeholder="Nombre o legajo"></div>
+  <div class="col-md-3 col-lg-2"><label class="form-label">Desde</label><input type="date" class="form-control" name="desde" value="{{ desde.isoformat() }}"></div>
+  <div class="col-md-3 col-lg-2"><label class="form-label">Hasta</label><input type="date" class="form-control" name="hasta" value="{{ hasta.isoformat() }}"></div>
+  <div class="col-md-3 col-lg-2"><label class="form-label">Tipo</label><select class="form-select" name="tipo"><option value="">Todos</option>{% for item in tipos %}<option value="{{ item.codigo }}" {% if tipo == item.codigo %}selected{% endif %}>{{ item.descripcion }}</option>{% endfor %}</select></div>
+  <div class="col-md-3 col-lg-2"><label class="form-label">Planta</label><select class="form-select" name="planta"><option value="">Todas</option>{% for item in plantas %}<option {% if planta == item %}selected{% endif %}>{{ item }}</option>{% endfor %}</select></div>
+  <div class="col-12 d-flex gap-2"><button class="btn btn-primary"><i class="bi bi-funnel"></i> Filtrar</button><a class="btn btn-outline-secondary" href="{{ url_for('ausentismo.index') }}">Limpiar</a></div>
+</div></div></form>
+
+<div class="card no-hover"><div class="table-responsive"><table class="table align-middle mb-0">
+  <thead><tr><th>Empleado</th><th>Área / planta</th><th>Tipo</th><th>Período</th><th class="text-end">Días</th></tr></thead>
+  <tbody>{% for item in ausencias %}<tr>
+    <td><strong>{{ item.nombre_origen or (item.empleado2.nombre_completo if item.empleado2 else '') or (((item.empleado2.apellido or '') ~ ' ' ~ (item.empleado2.nombre or '')) if item.empleado2 else '') or 'Empleado pendiente de vinculación' }}</strong><small class="d-block text-muted">Legajo {{ item.legajo_origen }}{% if not item.empleado2 %} · Sin vincular{% endif %}</small></td>
+    <td>{{ item.area_origen or '-' }}<small class="d-block text-muted">{{ item.planta_origen or 'Sin planta' }}</small></td>
+    <td><span class="badge bg-primary-subtle text-primary">{{ item.tipo.categoria }}</span><small class="d-block mt-1">{{ item.tipo.descripcion }}</small></td>
+    <td>{{ item.fecha_inicio.strftime('%d/%m/%Y') }} — {{ item.fecha_fin.strftime('%d/%m/%Y') }}</td>
+    <td class="text-end fw-bold">{{ item.dias_calendario }}</td>
+  </tr>{% else %}<tr><td colspan="5" class="text-center py-5 text-muted"><i class="bi bi-calendar2-check fs-2 d-block mb-2"></i>No hay ausencias para los filtros seleccionados.</td></tr>{% endfor %}</tbody>
+</table></div></div>
+
+{% if paginacion.pages > 1 %}<nav class="mt-4"><ul class="pagination justify-content-center">
+{% for numero in paginacion.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}{% if numero %}<li class="page-item {% if numero == paginacion.page %}active{% endif %}"><a class="page-link" href="{{ url_for('ausentismo.index', page=numero, q=q, desde=desde.isoformat(), hasta=hasta.isoformat(), tipo=tipo or '', planta=planta) }}">{{ numero }}</a></li>{% else %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}{% endfor %}
+</ul></nav>{% endif %}
+{% endblock %}

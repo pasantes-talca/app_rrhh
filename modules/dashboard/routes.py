@@ -96,7 +96,7 @@ def obtener_calendario_dashboard():
         extract('year', Noticia.fecha_importante) == fecha_mes.year,
         extract('month', Noticia.fecha_importante) == fecha_mes.month,
     )
-    if current_user.rol.nombre == 'empleado':
+    if current_user.rol.nombre not in ['administrador', 'recursos_humanos']:
         if current_user.empleado:
             noticias_query = noticias_query.filter(or_(
                 Noticia.visible_todos.is_(True),
@@ -136,7 +136,7 @@ def obtener_proximas_fechas_importantes(limite_dias=120):
         Noticia.estado == 'Publicada', Noticia.es_fecha_importante.is_(True),
         Noticia.fecha_importante.between(hoy, hasta),
     )
-    if current_user.rol.nombre == 'empleado':
+    if current_user.rol.nombre not in ['administrador', 'recursos_humanos']:
         if current_user.empleado:
             query = query.filter(or_(
                 Noticia.visible_todos.is_(True),

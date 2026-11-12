@@ -1,77 +1,57 @@
-from collections import OrderedDict
-
 from flask import Blueprint, render_template, request
 from flask_login import login_required
-from sqlalchemy import func, or_
-from sqlalchemy.orm import joinedload
-
-from database.models import Empleado, Empresa, Sector
 
 estructura_bp = Blueprint('estructura', __name__, url_prefix='/estructura')
 
+# Fuente: “Diagrama organigrama 08-10-2026”. Es explícito para no inferir
+# jerarquías desde sectores todavía incompletos de la nómina.
+ORGANIGRAMA = {
+    'direccion': {'cargo': 'Gerente General', 'nombre': 'Sol Alonso'},
+    'operaciones': {'cargo': 'Gerente de Operaciones', 'nombre': 'Ignacio Diaz'},
+    'areas': [
+        {'nombre': 'Finanzas', 'icono': 'bi-cash-coin', 'color': 'gold', 'responsable': ('Gerente de Finanzas', 'Marcos Ciaramitaro'), 'equipos': [
+            ('Analista de Tesorería', ['Adrian Pamelin']), ('Administración general', ['Arancibia Emanuel']), ('Auditor interno', ['Armando Viani'])]},
+        {'nombre': 'Contabilidad y BI', 'icono': 'bi-bar-chart-line', 'color': 'violet', 'responsable': ('Gerente de Contabilidad', 'Patricia Nicastro'), 'equipos': [
+            ('Líder de Costo y BI', ['Diana Subia']), ('Equipo contable', ['Jorgelina Tonelli', 'Doris Barañao'])]},
+        {'nombre': 'Supply Chain', 'icono': 'bi-box-seam', 'color': 'orange', 'responsable': ('Gerente Supply Chain', 'Damian Díaz'), 'equipos': [
+            ('Responsable de Almacén', ['Jose Agricolo', 'Mauro Ticona']), ('Mantenimiento vehicular', ['Adrian Tello']), ('Operación de almacén', ['Miguel Monte']), ('Compras', ['Gabriel Dominguez'])]},
+        {'nombre': 'Comercial', 'icono': 'bi-graph-up-arrow', 'color': 'blue', 'responsable': ('Gerente Comercial Nacional', 'Juan Ignacio Distefano'), 'equipos': [
+            ('Canal Supermercados · Jorge Guillen', ['Carina Marzola', 'Guillermo Bean', 'Veronica Llaneza', 'Maximiliano Gagliano']),
+            ('Canal Distribuidores · Manuel Castillo', ['Emiliano Calle', 'Fabián Cordoba', 'Martin Artigas', 'Eduardo Juarez', 'Pablo Castro', 'Gerardo Morales']),
+            ('Canal Minorista · Miguel Barbero', ['Julio Peralta', 'Martin Pereira', 'Angel Corales', 'Ruben Reynoso']), ('Facturación', ['Roberto Albornoz'])]},
+        {'nombre': 'Producción', 'icono': 'bi-gear-wide-connected', 'color': 'red', 'responsable': ('Gerente de Producción', 'Daniel Diaz'), 'equipos': [
+            ('Líder de Producción · Matias Barroso', []), ('Supervisores de Producción', ['Marcelo Paez', 'Jorge Sotelo', 'Juan Sevilla', 'Darío Azzolina']), ('Supervisor de Soplado', ['Fabian Barraquero']),
+            ('Operarios de Producción', ['Leandro Salinas', 'Carlos Garcia', 'Aldo Antonucci', 'Gaston Montiel', 'Danilo Lopez', 'Eduardo Albornoz', 'Santiago Borquez', 'Andres Sosa', 'Alejo Gauna', 'Alexander Gutierrez', 'Juan Escobar', 'Ernesto Gonzalez', 'Franco Lopez', 'Martin Sanchez', 'Felix Campillay']),
+            ('Operarios de Soplado', ['Marcelo Rosales', 'Juan Soria', 'Marcelo Carbone', 'Miguel Avila', 'Cristian Calderon', 'Jose Quiroga', 'Walter Aguilera'])]},
+        {'nombre': 'Mantenimiento', 'icono': 'bi-tools', 'color': 'slate', 'responsable': ('Líder de Mantenimiento', 'Juan Pablo Longhin'), 'equipos': [
+            ('Operarios de Mantenimiento', ['Ricardo Zamora', 'Gustavo Muñoz', 'Hector Funes', 'Sebastian Pinti', 'Eduardo Mendoza', 'Gaspar Coria', 'Cristian Bertinatto', 'Roberto Videla', 'Zanabria Lucas'])]},
+        {'nombre': 'Recursos Humanos', 'icono': 'bi-people', 'color': 'pink', 'responsable': ('Gerente de RR. HH.', 'Luciana Liguori'), 'equipos': [
+            ('Analista Junior', ['Romina Subia']), ('Administración de RR. HH.', ['Andrea Alonso'])]},
+        {'nombre': 'Logística y Expedición', 'icono': 'bi-truck', 'color': 'green', 'responsable': ('Líder de Logística y Expedición', 'Ariel Garro'), 'equipos': [
+            ('Responsable de Expedición', ['Carlos Bagnardi']), ('Choferes de larga distancia', ['Alberto Olguin', 'Franco Mahona', 'Carlos Motta', 'Carlos Lescano']), ('Operarios de Expedición', ['Nestor Marin', 'Mauricio Montenegro', 'Nicolas Di Batista', 'Emiliano Flores', 'Facundo Gini'])]},
+        {'nombre': 'Calidad, Seguridad y Tecnología', 'icono': 'bi-shield-check', 'color': 'cyan', 'responsable': ('Líder de Calidad y Jarabe', 'Agustin Rodriguez'), 'equipos': [
+            ('Higiene y Seguridad · Celeste Rosales', []), ('Calidad y Jarabe', ['Dario Alonso', 'Luis Moya', 'Renna Juan', 'Juan Amaya', 'Gustavo Funes', 'Carlos Videla', 'Carlos Abrego', 'Mauro Diaz']),
+            ('Sistemas · Daniel Rinaldi', ['Giuliana Bonora', 'Adriano Rovelli']), ('Legales', [])]},
+    ],
+}
+
+def _area_coincide(area, termino):
+    textos = [area['nombre'], *area['responsable']]
+    for titulo, personas in area['equipos']:
+        textos.extend([titulo, *personas])
+    return termino in ' '.join(textos).casefold()
 
 @estructura_bp.route('/')
 @login_required
 def index():
     busqueda = request.args.get('q', '').strip()
-    empresa_id = request.args.get('empresa_id', type=int)
-    sector_id = request.args.get('sector_id', type=int)
-
-    query = Empleado.query.options(
-        joinedload(Empleado.empresa),
-        joinedload(Empleado.sector),
-        joinedload(Empleado.puesto),
-        joinedload(Empleado.supervisor),
-    ).filter(Empleado.estado == 'Activo')
-
+    areas = ORGANIGRAMA['areas']
     if busqueda:
-        patron = f'%{busqueda}%'
-        query = query.filter(or_(
-            Empleado.nombre_apellido.ilike(patron),
-            Empleado.legajo.ilike(patron),
-            Empleado.dni.ilike(patron),
-        ))
-    if empresa_id:
-        query = query.filter(Empleado.empresa_id == empresa_id)
-    if sector_id:
-        query = query.filter(Empleado.sector_id == sector_id)
-
-    empleados = query.order_by(func.lower(Empleado.nombre_apellido)).all()
-
-    grupos = {}
-    for empleado in empleados:
-        empresa_nombre = empleado.empresa.nombre if empleado.empresa else 'Sin empresa asignada'
-        sector_nombre = empleado.sector.nombre if empleado.sector else 'Sin sector asignado'
-        grupos.setdefault(empresa_nombre, {}).setdefault(sector_nombre, []).append(empleado)
-
-    estructura = OrderedDict()
-    for empresa_nombre in sorted(grupos, key=str.casefold):
-        estructura[empresa_nombre] = OrderedDict(
-            (sector, grupos[empresa_nombre][sector])
-            for sector in sorted(grupos[empresa_nombre], key=str.casefold)
-        )
-
-    total_activos = Empleado.query.filter_by(estado='Activo').count()
-    resumen = {
-        'empleados': total_activos,
-        'empresas': Empleado.query.filter(
-            Empleado.estado == 'Activo', Empleado.empresa_id.isnot(None)
-        ).with_entities(Empleado.empresa_id).distinct().count(),
-        'sectores': Empleado.query.filter(
-            Empleado.estado == 'Activo', Empleado.sector_id.isnot(None)
-        ).with_entities(Empleado.sector_id).distinct().count(),
-        'sin_puesto': Empleado.query.filter(
-            Empleado.estado == 'Activo', Empleado.puesto_id.is_(None)
-        ).count(),
-        'sin_supervisor': Empleado.query.filter(
-            Empleado.estado == 'Activo', Empleado.supervisor_id.is_(None)
-        ).count(),
-    }
-
-    return render_template(
-        'estructura/index.html', estructura=estructura, resumen=resumen,
-        empresas=Empresa.query.filter_by(activo=True).order_by(Empresa.nombre).all(),
-        sectores=Sector.query.filter_by(activo=True).order_by(Sector.nombre).all(),
-        busqueda=busqueda, empresa_id=empresa_id, sector_id=sector_id,
-        resultados=len(empleados),
-    )
+        areas = [area for area in areas if _area_coincide(area, busqueda.casefold())]
+    personas = {ORGANIGRAMA['direccion']['nombre'], ORGANIGRAMA['operaciones']['nombre']}
+    for area in ORGANIGRAMA['areas']:
+        personas.add(area['responsable'][1])
+        for _, integrantes in area['equipos']:
+            personas.update(integrantes)
+    return render_template('estructura/index.html', organigrama=ORGANIGRAMA, areas=areas,
+                           busqueda=busqueda, total_personas=len(personas), resultados=len(areas))

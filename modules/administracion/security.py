@@ -6,6 +6,7 @@ MODULOS = {
     'dashboard': 'Panel de control', 'empleados': 'Empleados', 'licencias': 'Licencias',
     'horas_extra': 'Horas extra', 'sanciones': 'Sanciones', 'noticias': 'Noticias',
     'documentos': 'Documentos', 'estructura': 'Estructura', 'notificaciones': 'Notificaciones',
+    'ausentismo': 'Ausentismo', 'indicadores': 'Indicadores gerenciales',
 }
 ACCIONES = ('consultar', 'crear', 'editar', 'anular', 'exportar', 'configurar')
 
@@ -37,6 +38,10 @@ def accion_endpoint(endpoint, method):
 def tiene_permiso(usuario, modulo, accion):
     if usuario.rol and usuario.rol.nombre == 'administrador':
         return True
+    if modulo == 'ausentismo' and usuario.rol and usuario.rol.nombre in ('recursos_humanos', 'gerencia'):
+        return accion == 'consultar'
+    if modulo == 'indicadores' and usuario.rol and usuario.rol.nombre == 'gerencia':
+        return accion == 'consultar'
     # Sin configuración individual se conservan los permisos de rol existentes.
     if not usuario.permisos:
         return True

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Indicadores · Talca Personas{% endblock %}
+{% block content %}
+<div class="page-heading indicator-heading">
+  <div><span class="eyebrow">INFORMACIÓN PARA DECIDIR</span><h1>Indicadores</h1><p>Paneles ejecutivos de Recursos Humanos, actualizados con la información del sistema.</p></div>
+</div>
+<div class="indicator-library">
+  <a href="{{ url_for('indicadores.ausentismo') }}" class="indicator-library-card available">
+    <span class="indicator-library-icon"><i class="bi bi-calendar2-pulse"></i></span>
+    <span class="indicator-library-copy"><small>RECURSOS HUMANOS</small><strong>Ausentismo y vacaciones</strong><em>Dotación, tasa de ausentismo, tendencias, causas y vacaciones por área.</em><span>Ver indicador <i class="bi bi-arrow-right"></i></span></span>
+    <span class="indicator-status"><i class="bi bi-circle-fill"></i> Disponible</span>
+  </a>
+  <article class="indicator-library-card upcoming"><span class="indicator-library-icon"><i class="bi bi-bar-chart"></i></span><span class="indicator-library-copy"><small>PRÓXIMAMENTE</small><strong>Nuevos indicadores</strong><em>Este espacio está preparado para incorporar más tableros gerenciales.</em></span></article>
+</div>
+{% endblock %}
