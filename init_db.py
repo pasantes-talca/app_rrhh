@@ -145,18 +145,20 @@ def init_db():
         # 8. Administrador inicial
         admin_rol = Rol.query.filter_by(nombre='administrador').first()
         if admin_rol:
-            if not Usuario.query.filter_by(usuario='admin').first():
+            if not Usuario.query.filter_by(usuario='administrador').first():
                 # Crear un empleado ficticio para el admin o dejar empleado_id nulo
                 # Como empleado_id es opcional según el modelo (nullable=True implícito)
                 admin_user = Usuario(
                     rol_id=admin_rol.id,
-                    usuario='admin',
+                    usuario='administrador',
                     correo='admin@talca.com',
-                    password_hash=generate_password_hash('admin123')
+                    password_hash=generate_password_hash('Admi2026'),
+                    debe_cambiar_password=False,
+                    activo=True,
                 )
                 db.session.add(admin_user)
                 db.session.commit()
-                print("Usuario administrador creado (admin / admin123). ¡Recuerda cambiar la contraseña!")
+                print("Usuario administrador creado correctamente.")
 
         print("Inicialización completada.")
 

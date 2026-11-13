@@ -69,6 +69,11 @@ SOURCE_COLUMNS = {
 
 DATE_FIELDS = {"fecha_nacimiento", "fecha_ingreso", "fecha_egreso", "fecha_efectivizacion"}
 TEMPORARY_PASSWORD = "Talca2026"
+# Registros duplicados confirmados por RR. HH. que no deben replicarse desde Trilay.
+# Se conserva exclusivamente Patricia Mónica Nicastro (idUsuario 94 / pnicastro).
+EXCLUDED_SOURCE_USER_IDS = {
+    313, 325, 328, 329, 330, 331, 1354, 1381, 1382, 1503, 1531, 1532,
+}
 
 
 def _source_engine(config):
@@ -129,7 +134,11 @@ def fetch_trilay(config):
     engine = _source_engine(config)
     try:
         with engine.connect() as connection:
-            return [_normalize(dict(row)) for row in connection.execute(statement).mappings()]
+            return [
+                _normalize(dict(row))
+                for row in connection.execute(statement).mappings()
+                if row["idUsuario"] not in EXCLUDED_SOURCE_USER_IDS
+            ]
     finally:
         engine.dispose()
 

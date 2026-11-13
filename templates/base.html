@@ -45,7 +45,11 @@
             <nav class="nav flex-column">
                 <a href="{{ url_for('dashboard.index') }}" class="nav-link {% if request.endpoint == 'dashboard.index' %}active{% endif %}"><i class="bi bi-grid-1x2"></i><span>Inicio</span></a>
                 <a href="{{ url_for('estructura.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('estructura.') %}active{% endif %}"><i class="bi bi-diagram-3"></i><span>Estructura organizacional</span></a>
+                {% if current_user.rol.nombre in ['administrador', 'recursos_humanos', 'gerencia'] %}
+                <a href="{{ url_for('vacaciones.calendario_vacaciones') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('vacaciones.') %}active{% endif %}"><i class="bi bi-sun"></i><span>Vacaciones</span></a>
+                {% else %}
                 <a href="{{ url_for('vacaciones.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('vacaciones.') %}active{% endif %}"><i class="bi bi-sun"></i><span>Mis vacaciones</span></a>
+                {% endif %}
                 {% if current_user.rol.nombre in ['administrador', 'gerencia'] %}
                 <a href="{{ url_for('indicadores.index') }}" class="nav-link {% if request.endpoint and request.endpoint.startswith('indicadores.') %}active{% endif %}"><i class="bi bi-graph-up-arrow"></i><span>Indicadores</span></a>
                 {% endif %}

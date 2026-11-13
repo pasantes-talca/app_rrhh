@@ -6,7 +6,8 @@ MODULOS = {
     'dashboard': 'Panel de control', 'empleados': 'Empleados', 'licencias': 'Licencias',
     'horas_extra': 'Horas extra', 'sanciones': 'Sanciones', 'noticias': 'Noticias',
     'documentos': 'Documentos', 'estructura': 'Estructura', 'notificaciones': 'Notificaciones',
-    'ausentismo': 'Ausentismo', 'indicadores': 'Indicadores gerenciales',
+    'ausentismo': 'Ausentismo', 'vacaciones': 'Vacaciones',
+    'indicadores': 'Indicadores gerenciales',
 }
 ACCIONES = ('consultar', 'crear', 'editar', 'anular', 'exportar', 'configurar')
 
