@@ -1,0 +1,1 @@
+"""Panel principal por rol."""

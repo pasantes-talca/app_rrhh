@@ -4,12 +4,20 @@
 !.env.example
 
 # Entornos virtuales y Python
-venv/
-.venv/
+**/.venv/
+.test-artifacts/
 __pycache__/
 *.py[cod]
 *.pyd
 .pytest_cache/
+.coverage
+coverage.xml
+frontend/node_modules/
+frontend/dist/
+frontend/playwright-report/
+frontend/test-results/
+*.tsbuildinfo
+*.egg-info/
 
 # Archivos cargados y datos privados
 uploads/

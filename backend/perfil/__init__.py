@@ -1,0 +1,1 @@
+"""Autogestión del perfil personal."""
