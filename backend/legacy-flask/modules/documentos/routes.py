@@ -171,25 +171,7 @@ def ver_recibo(id):
 @documentos_bp.route('/recibos/<int:id>/responder', methods=['POST'])
 @login_required
 def responder_recibo(id):
-    if current_app.config.get('RECEIPT_PASSKEY_ENABLED'):
-        abort(403, description='Para responder este recibo debés verificar tu passkey.')
-    recibo = ReciboSueldo.query.get_or_404(id)
-    if not current_user.empleado or current_user.empleado.id != recibo.empleado_id:
-        abort(403)
-    if recibo.estado != 'Pendiente':
-        flash('Este recibo ya fue respondido.', 'warning')
-        return redirect(url_for('documentos.ver_recibo', id=id))
-    respuesta = request.form.get('respuesta')
-    observacion = request.form.get('observacion', '').strip()
-    if respuesta not in ('Conforme', 'Disconforme'):
-        abort(400)
-    if respuesta == 'Disconforme' and not observacion:
-        flash('Indicá el motivo de la disconformidad.', 'warning')
-        return redirect(url_for('documentos.ver_recibo', id=id))
-    record_receipt_response(recibo, respuesta, observacion)
-    db.session.commit()
-    flash('Tu respuesta quedó registrada.', 'success')
-    return redirect(url_for('documentos.ver_recibo', id=id))
+    abort(403, description='Para responder este recibo debés verificar tu passkey. Si no está habilitada, contactá a Sistemas.')
 
 
 def record_receipt_response(recibo, respuesta, observacion):

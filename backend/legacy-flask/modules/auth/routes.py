@@ -151,8 +151,13 @@ def perfil():
                     anterior.unlink()
             flash('Tu información personal se actualizó correctamente.', 'success')
             return redirect(url_for('auth.perfil'))
+    from modules.documentos.passkey_models import ReceiptCredential
+    from flask_wtf.csrf import generate_csrf
+    enabled = current_app.config.get('RECEIPT_PASSKEY_ENABLED', False)
+    registered = enabled and ReceiptCredential.query.filter_by(usuario_id=current_user.id).first() is not None
     return render_template('auth/perfil.html', form=form, empleado=empleado, empleado2=empleado2,
-                           password_form=CambiarPasswordForm())
+                           password_form=CambiarPasswordForm(), passkey_enabled=enabled,
+                           passkey_registered=registered, receipt_csrf=generate_csrf())
 
 
 @auth_bp.route('/perfil/password', methods=['POST'])

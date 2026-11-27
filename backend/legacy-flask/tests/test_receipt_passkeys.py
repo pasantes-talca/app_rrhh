@@ -37,6 +37,7 @@ def receipt_env():
     previous_login_view = login_manager.login_view
     login_manager.login_view = None
     app.register_blueprint(documentos_bp)
+    app.add_url_rule('/auth/perfil', endpoint='auth.perfil', view_func=lambda: 'Perfil sintético')
     app.jinja_loader = ChoiceLoader([
         DictLoader({'base.html': '{% block content %}{% endblock %}{% block scripts %}{% endblock %}'}),
         FileSystemLoader(str(Path(__file__).resolve().parents[1] / 'templates')),
@@ -212,11 +213,17 @@ def test_receipt_screen_renders_with_csrf_and_matching_flow(receipt_env, enabled
 
 
 @pytest.mark.parametrize('uv', [True, False])
-def test_real_device_registration_verifies_attestation_and_user_verification(receipt_env, uv):
+@pytest.mark.parametrize('from_profile', [False, True])
+def test_real_device_registration_verifies_attestation_and_user_verification(receipt_env, uv, from_profile):
     _, client, headers, key = receipt_env
     ReceiptCredential.query.delete()
     db.session.commit()
-    result = options(client, headers, purpose='register', password='Synthetic!2026').json
+    if from_profile:
+        result = client.post('/documentos/passkey/opciones', headers=headers,
+                             json={'purpose': 'register', 'password': 'Synthetic!2026'}).json
+        assert ReceiptChallenge.query.one().recibo_id is None
+    else:
+        result = options(client, headers, purpose='register', password='Synthetic!2026').json
     numbers = key.public_key().public_numbers()
     public = cbor2.dumps({1: 2, 3: -7, -1: 1,
                         -2: numbers.x.to_bytes(32, 'big'), -3: numbers.y.to_bytes(32, 'big')})
@@ -228,8 +235,40 @@ def test_real_device_registration_verifies_attestation_and_user_verification(rec
     credential = {'id': b64(credential_id), 'rawId': b64(credential_id), 'type': 'public-key',
                   'response': {'clientDataJSON': b64(client_data),
                                'attestationObject': b64(cbor2.dumps({'fmt': 'none', 'attStmt': {}, 'authData': auth}))}}
-    response = client.post('/documentos/recibos/1/passkey/verificar', headers=headers,
+    url = '/documentos/passkey/verificar' if from_profile else '/documentos/recibos/1/passkey/verificar'
+    response = client.post(url, headers=headers,
                            json={'purpose': 'register', 'challenge_id': result['challenge_id'], 'credential': credential})
     assert response.status_code == (200 if uv else 400)
     assert ReceiptCredential.query.count() == (1 if uv else 0)
     assert db.session.get(ReciboSueldo, 1).estado == 'Pendiente'
+
+
+def test_disabled_signing_never_falls_back_to_password_or_button(receipt_env):
+    app, client, _, _ = receipt_env
+    app.config['RECEIPT_PASSKEY_ENABLED'] = False
+    assert client.post('/documentos/recibos/1/responder', data={'respuesta': 'Conforme'}).status_code == 403
+    page = client.get('/documentos/recibos/1')
+    assert page.status_code == 200
+    assert b'name="respuesta"' not in page.data
+    assert db.session.get(ReciboSueldo, 1).estado == 'Pendiente'
+
+
+def test_profile_endpoint_cannot_sign_receipts(receipt_env):
+    _, client, headers, _ = receipt_env
+    response = client.post('/documentos/passkey/opciones', headers=headers,
+                           json={'purpose': 'sign', 'respuesta': 'Conforme'})
+    assert response.status_code == 400
+
+
+def test_profile_registration_is_bound_to_user_and_not_receipt(receipt_env):
+    _, client, headers, _ = receipt_env
+    ReceiptCredential.query.delete()
+    db.session.commit()
+    with client.session_transaction() as sess:
+        sess['_user_id'] = '2'
+    result = client.post('/documentos/passkey/opciones', headers=headers,
+                         json={'purpose': 'register', 'password': 'Synthetic!2026'})
+    assert result.status_code == 200
+    challenge = ReceiptChallenge.query.one()
+    assert challenge.usuario_id == 2
+    assert challenge.recibo_id is None

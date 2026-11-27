@@ -20,11 +20,7 @@
         <input type="hidden" id="receipt-csrf" value="{{ receipt_csrf }}">
         <p>Confirmá con Face ID, huella o el desbloqueo seguro de tu dispositivo. TALCA no recibe ni almacena tu rostro.</p>
         {% if not passkey_registered %}
-        <div id="receipt-enroll" class="mb-3">
-          <label for="receipt-password" class="form-label">Tu contraseña actual (solo para registrar el dispositivo)</label>
-          <input type="password" id="receipt-password" class="form-control" autocomplete="current-password">
-          <button type="button" id="receipt-register" class="btn btn-outline-primary mt-2"><i class="bi bi-person-check me-2"></i>Registrar mi dispositivo</button>
-        </div>
+        <div class="alert alert-info">Primero registrá tu dispositivo en <a href="{{ url_for('auth.perfil') }}">Mi perfil → Face ID y firma de recibos</a>. Después volvé para firmar.</div>
         {% endif %}
         <label class="form-label" for="observacion">Observación</label>
         <textarea id="observacion" class="form-control" rows="3" maxlength="2000" placeholder="Obligatoria si elegís disconforme"></textarea>
@@ -35,12 +31,7 @@
         <p id="receipt-passkey-status" class="mt-3" role="status" aria-live="polite"></p>
       </div>
       {% else %}
-      <form method="POST" action="{{ url_for('documentos.responder_recibo', id=recibo.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ receipt_csrf }}">
-        <label class="form-label" for="observacion">Observación</label>
-        <textarea id="observacion" name="observacion" class="form-control" rows="3" placeholder="Obligatoria si elegís disconforme"></textarea>
-        <div class="d-flex flex-wrap gap-2 mt-3"><button name="respuesta" value="Conforme" class="btn btn-success">Confirmar conforme</button><button name="respuesta" value="Disconforme" class="btn btn-outline-danger">Informar disconformidad</button></div>
-      </form>
+      <div class="alert alert-warning" role="status">La verificación de identidad todavía no está habilitada. Este recibo queda pendiente: no se puede confirmar sin passkey. Consultá el estado en <a href="{{ url_for('auth.perfil') }}">Mi perfil</a> o contactá a Sistemas.</div>
       {% endif %}
       {% endif %}
       {% if recibo.estado != 'Pendiente' %}

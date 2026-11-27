@@ -3,6 +3,25 @@
 {% block content %}
 <div class="profile-page">
   <header class="profile-heading"><span class="profile-eyebrow">MI CUENTA</span><h1>Mi información personal</h1><p>Mantené tus datos actualizados para que podamos comunicarnos con vos.</p></header>
+  <section class="card profile-form-card mb-4" aria-labelledby="passkey-heading">
+    <div class="profile-section-head"><span class="profile-section-icon"><i class="bi bi-fingerprint"></i></span><div><h2 id="passkey-heading">Face ID y firma de recibos</h2><p>Registrá una passkey para verificar tu identidad al firmar cada recibo.</p></div></div>
+    <p>En un iPhone compatible podés usar Face ID. Tu dispositivo también puede ofrecer huella o su código de desbloqueo. No guardamos tu rostro ni tu huella.</p>
+    {% if not passkey_enabled %}
+      <div class="alert alert-warning mb-0" role="status">La firma está pendiente de habilitación por Sistemas. Necesita acceso HTTPS con certificado válido y las tablas de passkeys. Una dirección que empieza con http:// no permite registrar Face ID desde el celular. Hasta habilitarlo, los recibos nuevos quedan pendientes.</div>
+    {% elif passkey_registered %}
+      <p class="mb-0"><i class="bi bi-shield-check"></i> Tu passkey está registrada. Al firmar un recibo se te pedirá verificar tu identidad con ella.</p>
+    {% else %}
+      <div id="receipt-passkey" data-options="{{ url_for('documentos.passkey_options') }}" data-verify="{{ url_for('documentos.passkey_verify') }}" data-registered="false">
+        <input type="hidden" id="receipt-csrf" value="{{ receipt_csrf }}">
+        <div id="receipt-enroll">
+          <label for="receipt-password" class="form-label">Confirmá tu contraseña actual</label>
+          <input type="password" id="receipt-password" class="form-control" autocomplete="current-password">
+          <button type="button" id="receipt-register" class="btn btn-primary mt-3"><i class="bi bi-fingerprint me-2"></i>Configurar Face ID / passkey</button>
+        </div>
+        <p id="receipt-passkey-status" class="mt-3 mb-0" role="status" aria-live="polite"></p>
+      </div>
+    {% endif %}
+  </section>
   <form method="POST" enctype="multipart/form-data" class="profile-layout">
     {{ form.hidden_tag() }}
     <aside class="card profile-photo-card">
@@ -71,3 +90,4 @@ document.getElementById('foto')?.addEventListener('change', function () {
 });
 </script>
 {% endblock %}
+{% block scripts %}{% if passkey_enabled and not passkey_registered %}<script src="{{ url_for('static', filename='js/receipt-passkey.js') }}" defer></script>{% endif %}{% endblock %}

@@ -143,7 +143,8 @@ La función queda desactivada hasta preparar el ambiente:
 
 1. Instalar `backend/legacy-flask/requirements.txt` en el entorno del backend.
 2. Respaldar la base destino y, previa aprobación para ese ambiente, aplicar
-   `backend/legacy-flask/migrations/20261126_recibos_passkeys.sql`.
+   `backend/legacy-flask/migrations/20261126_recibos_passkeys.sql` y luego
+   `backend/legacy-flask/migrations/20261127_passkeys_perfil.sql`.
 3. Configurar `WEBAUTHN_RP_ID` (dominio sin protocolo ni puerto),
    `WEBAUTHN_ORIGIN` (origen exacto con protocolo y puerto) y `RECEIPT_PASSKEY_ENABLED=true`.
 4. Reiniciar Flask y validar con un empleado y un recibo de pruebas.
@@ -155,21 +156,45 @@ teléfono. Usar el dominio definitivo antes de registrar claves destinadas a pro
 
 Impacto del esquema: agrega `rrhh.recibo_credenciales`, `rrhh.recibo_desafios` y
 `rrhh.recibo_firmas`, con claves foráneas a usuarios y recibos. No altera datos ni columnas
-de tablas existentes. El primer registro de dispositivo exige la contraseña actual;
+de tablas existentes en la primera migración. La segunda permite `recibo_id` nulo en
+`recibo_desafios`, exclusivamente para registrar la passkey desde Mi perfil sin recibo.
+El primer registro de dispositivo exige la contraseña actual;
 no se admite reemplazar una clave desde el flujo de recibos. Recuperación por pérdida del
 dispositivo requiere un procedimiento de identidad a cargo de Sistemas; no hay un bypass
 de firma por contraseña. No se ofrecen mecanismos automáticos de recuperación todavía.
 
 Cada desafío dura tres minutos y está ligado a usuario, sesión, PDF, recibo y respuesta.
 La constancia y la respuesta se guardan juntas, con control de concurrencia en PostgreSQL.
-El endpoint antiguo de Flask y la API de respuesta en migración se bloquean cuando la
-función está activa. Los recibos respondidos previamente conservan su historial.
+El empleado registra la passkey en **Mi perfil → Face ID y firma de recibos**, sin necesitar
+un recibo pendiente. Al responder cada recibo debe verificar su identidad nuevamente.
+El endpoint antiguo de Flask y la API de respuesta en migración quedan bloqueados siempre.
+Si la función está desactivada, la pantalla informa que falta habilitarla y conserva el recibo
+pendiente; ya no ofrece confirmar sin verificación. Los recibos respondidos previamente
+conservan su historial y no se presentan como firmados con passkey.
 
-Rollback: desactivar la variable y reiniciar restaura el flujo anterior; hacerlo requiere
-decisión operativa porque vuelve a permitir respuestas sin passkey. Conservar las tres
+Rollback operativo: desactivar la variable y reiniciar suspende las nuevas firmas y mantiene
+los recibos pendientes. Para volver al código anterior se requiere una decisión explícita,
+porque aquella versión permite responder sin passkey. Conservar las tres
 tablas y sus constancias; no ejecutar un borrado de esquema para revertir la aplicación.
 Los respaldos deben incluir esas tablas y sus datos, con acceso restringido.
 
 La activación en la base corporativa y la prueba real con Face ID están pendientes.
+
+### Uso desde celulares
+
+`static/css/responsive.css` adapta el menú desplegable, encabezado, formularios, tarjetas,
+recibos y contenedores de tablas para pantallas pequeñas. Las tablas conservan desplazamiento
+horizontal dentro de su contenedor. Bootstrap 5.3.0 y Bootstrap Icons 1.10.5 se sirven desde
+`static/vendor/` (licencia MIT incluida en los archivos), evitando depender de un CDN externo
+para la distribución y los controles de navegación. Las fuentes de Google conservan fuentes
+del sistema como alternativa. Las pruebas visuales se realizan con registros sintéticos.
+
+Validación del 27/11/2026: 31 pruebas aprobadas y 2 fallos esperados preexistentes en el
+conjunto de regresión ejecutado. Se comprobaron 40 combinaciones de pantallas de empleado
+y RRHH en anchos 360, 390, 768 y 1440, sin desbordamiento horizontal de página y con menú
+móvil funcional. Se validó el flujo perfil → registro de passkey → firma del recibo →
+constancia usando un autenticador virtual de Chromium. Esto no sustituye la prueba en un
+iPhone físico ni valida el despliegue HTTPS corporativo. Las pruebas no usan datos del ERP
+ni la base corporativa.
 
 Los documentos de `backend/docs/migration/` registran la línea base, la paridad funcional y el plan de retiro de Flask. `AGENTS.md` contiene las reglas permanentes de trabajo y seguridad del repositorio.

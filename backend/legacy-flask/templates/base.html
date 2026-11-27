@@ -14,8 +14,8 @@
         }());
     </script>
     <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo-talca.png') }}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendor/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendor/bootstrap-icons.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/checklist.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/birthday.css') }}">
@@ -26,6 +26,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/vacaciones.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/administracion.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/responsive.css', v='20261127') }}">
 </head>
 <body class="{% if not current_user.is_authenticated %}auth-page{% endif %}">
 {% if current_user.is_authenticated %}
@@ -34,7 +35,7 @@
     <aside class="sidebar offcanvas-lg offcanvas-start" tabindex="-1" id="appSidebar">
         <div class="offcanvas-header d-lg-none">
             <span class="brand-name">Talca Personas</span>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#appSidebar" aria-label="Cerrar menú"></button>
         </div>
         <div class="sidebar-inner">
             <a href="{{ url_for('dashboard.index') }}" class="brand">
@@ -86,7 +87,7 @@
     </aside>
     <div class="app-main">
         <header class="topbar">
-            <button class="btn menu-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar"><i class="bi bi-list"></i></button>
+            <button class="btn menu-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar" aria-label="Abrir menú"><i class="bi bi-list"></i></button>
             <div class="topbar-spacer"></div>
             <button class="theme-toggle topbar-theme-toggle ms-2" type="button" data-theme-toggle aria-label="Activar modo oscuro" title="Cambiar tema"><i class="bi bi-moon-stars"></i><span>Modo oscuro</span></button>
             <div class="dropdown me-2">
@@ -136,7 +137,7 @@
     <p class="auth-footer">Portal interno de Recursos Humanos</p>
 </main>
 {% endif %}
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 {% block scripts %}{% endblock %}
 </body>

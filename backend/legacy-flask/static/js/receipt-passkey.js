@@ -34,7 +34,7 @@
     return;
   }
   async function ceremony(purpose, answer) {
-    const observation = document.getElementById('observacion').value.trim();
+    const observation = document.getElementById('observacion')?.value.trim() || '';
     if (purpose === 'sign' && answer === 'Disconforme' && !observation) {
       status.textContent = 'Indicá el motivo de la disconformidad.';
       return;

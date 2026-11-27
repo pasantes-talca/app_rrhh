@@ -20,7 +20,7 @@ class ReceiptChallenge(db.Model):
     __table_args__ = {'schema': 'rrhh'}
     id = db.Column(db.String(64), primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('rrhh.usuarios.id'), nullable=False)
-    recibo_id = db.Column(db.Integer, db.ForeignKey('rrhh.recibos_sueldo.id'), nullable=False)
+    recibo_id = db.Column(db.Integer, db.ForeignKey('rrhh.recibos_sueldo.id'), nullable=True)
     purpose = db.Column(db.String(16), nullable=False)
     challenge = db.Column(db.LargeBinary, nullable=False)
     session_binding = db.Column(db.String(64), nullable=False)

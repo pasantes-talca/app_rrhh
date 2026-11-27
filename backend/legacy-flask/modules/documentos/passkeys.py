@@ -65,7 +65,7 @@ def _digest(receipt):
 
 def _consume(challenge_id, receipt, purpose):
     challenge = ReceiptChallenge.query.filter_by(
-        id=challenge_id, usuario_id=current_user.id, recibo_id=receipt.id,
+        id=challenge_id, usuario_id=current_user.id, recibo_id=receipt.id if receipt else None,
         purpose=purpose,
     ).with_for_update().first()
     if (not challenge or challenge.consumed_at or challenge.expires_at <= datetime.utcnow()
@@ -76,6 +76,7 @@ def _consume(challenge_id, receipt, purpose):
 
 
 def register_routes(blueprint):
+    @blueprint.route('/passkey/opciones', methods=['POST'], defaults={'id': None})
     @blueprint.route('/recibos/<int:id>/passkey/opciones', methods=['POST'])
     @login_required
     def passkey_options(id):
@@ -86,9 +87,11 @@ def register_routes(blueprint):
             PublicKeyCredentialDescriptor, UserVerificationRequirement,
         )
         payload, _, rp_id = _context()
-        receipt = _owned_receipt(id)
+        receipt = _owned_receipt(id) if id is not None else None
         purpose = payload.get('purpose')
         if purpose not in ('register', 'sign'):
+            abort(400)
+        if receipt is None and purpose != 'register':
             abort(400)
         now = datetime.utcnow()
         recent = ReceiptChallenge.query.filter(
@@ -98,7 +101,7 @@ def register_routes(blueprint):
         if recent >= 10:
             abort(429, description='Demasiados intentos. Esperá unos minutos.')
         credentials = ReceiptCredential.query.filter_by(usuario_id=current_user.id).all()
-        digest = _digest(receipt)
+        digest = _digest(receipt) if receipt else hashlib.sha256(b'profile-registration').hexdigest()
         challenge = ReceiptChallenge(
             id=secrets.token_hex(32), usuario_id=current_user.id, recibo_id=id,
             purpose=purpose, challenge=secrets.token_bytes(32),
@@ -146,6 +149,7 @@ def register_routes(blueprint):
         response.headers['Cache-Control'] = 'no-store'
         return response
 
+    @blueprint.route('/passkey/verificar', methods=['POST'], defaults={'id': None})
     @blueprint.route('/recibos/<int:id>/passkey/verificar', methods=['POST'])
     @login_required
     def passkey_verify(id):
@@ -153,15 +157,17 @@ def register_routes(blueprint):
         from webauthn.helpers import bytes_to_base64url
         from webauthn.helpers.exceptions import WebAuthnException
         payload, origin, rp_id = _context()
-        receipt = _owned_receipt(id, lock=True)
+        receipt = _owned_receipt(id, lock=True) if id is not None else None
         purpose = payload.get('purpose')
         if purpose not in ('register', 'sign') or not isinstance(payload.get('challenge_id'), str):
+            abort(400)
+        if receipt is None and purpose != 'register':
             abort(400)
         challenge = _consume(payload['challenge_id'], receipt, purpose)
         credential = payload.get('credential')
         if not isinstance(credential, dict):
             abort(400)
-        digest = _digest(receipt)
+        digest = _digest(receipt) if receipt else hashlib.sha256(b'profile-registration').hexdigest()
         if not secrets.compare_digest(challenge.document_hash, digest):
             abort(409)
         try:

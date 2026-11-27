@@ -1,5 +1,4 @@
 from datetime import datetime
-import os
 from hashlib import sha256
 from pathlib import Path
 
@@ -221,18 +220,7 @@ def mark_receipt_viewed(receipt_id: int, request: Request, principal: Principal 
 @router.post("/receipts/{receipt_id}/respond", response_model=ReceiptView)
 def respond_receipt(receipt_id: int, payload: ReceiptResponse, request: Request, principal: Principal = Depends(current_principal), session: Session = Depends(get_session)):
     verify_csrf(request)
-    if os.environ.get('RECEIPT_PASSKEY_ENABLED', 'false').lower() == 'true':
-        raise HTTPException(status_code=403, detail='receipt_passkey_required_use_stable_portal')
-    item = session.get(PayrollReceipt, receipt_id)
-    if item is None or principal.employee_id != item.employee_id: raise HTTPException(status_code=404, detail="receipt_not_found")
-    if item.state != "Pendiente": raise HTTPException(status_code=409, detail="receipt_already_answered")
-    if payload.response not in {"Conforme", "Disconforme"}: raise HTTPException(status_code=422, detail="invalid_receipt_response")
-    if payload.response == "Disconforme" and not (payload.observation or "").strip(): raise HTTPException(status_code=422, detail="observation_required")
-    now = datetime.utcnow(); item.state = payload.response; item.response = payload.response; item.employee_observation = (payload.observation or "").strip() or None; item.responded_at = now; item.viewed_at = item.viewed_at or now; item.response_ip = (request.headers.get("X-Forwarded-For") or (request.client.host if request.client else ""))[:64]; item.user_agent = request.headers.get("User-Agent", "")[:1000]
-    users = session.scalars(select(User).join(Role).where(Role.name.in_(MANAGEMENT_ROLES), User.active.is_(True), User.id != principal.user_id)).all()
-    for user in users: session.add(Notification(user_id=user.id, title=f"Recibo {payload.response.lower()}", message=f"{item.employee.display_name} respondiÃ³ el recibo del perÃ­odo {item.period}.", kind="recibo", reference_type="recibo_sueldo", reference_id=item.id, read=False, created_at=now))
-    session.commit(); session.refresh(item)
-    return _receipt_view(item)
+    raise HTTPException(status_code=403, detail='receipt_passkey_required_use_stable_portal')
 
 
 @router.get("/receipts/{receipt_id}/file")
