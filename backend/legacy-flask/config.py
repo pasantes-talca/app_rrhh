@@ -5,6 +5,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Config:
+    RECEIPT_PASSKEY_ENABLED = os.environ.get('RECEIPT_PASSKEY_ENABLED', 'false').lower() == 'true'
+    WEBAUTHN_RP_ID = os.environ.get('WEBAUTHN_RP_ID', 'localhost')
+    WEBAUTHN_ORIGIN = os.environ.get('WEBAUTHN_ORIGIN', 'http://localhost:5000')
     SECRET_KEY = os.environ.get('SECRET_KEY', 'default_secret_key')
     
     # Configuración de base de datos

@@ -131,4 +131,45 @@ Las pruebas de Flask utilizan reglas puras, metadatos ORM, análisis estático y
 
 ## Documentación relacionada
 
+### Recibos con verificación del dispositivo
+
+El portal Flask incorpora registro de passkey y confirmación de recibos mediante WebAuthn.
+Face ID se utiliza cuando el dispositivo lo ofrece; el sistema operativo puede ofrecer huella
+o PIN. El servidor verifica una firma criptográfica y la verificación de usuario, sin recibir
+rostros, huellas ni la clave privada. No puede determinar qué método biométrico se utilizó.
+La constancia se guarda aparte del PDF; no incorpora una firma digital certificada al archivo.
+
+La función queda desactivada hasta preparar el ambiente:
+
+1. Instalar `backend/legacy-flask/requirements.txt` en el entorno del backend.
+2. Respaldar la base destino y, previa aprobación para ese ambiente, aplicar
+   `backend/legacy-flask/migrations/20261126_recibos_passkeys.sql`.
+3. Configurar `WEBAUTHN_RP_ID` (dominio sin protocolo ni puerto),
+   `WEBAUTHN_ORIGIN` (origen exacto con protocolo y puerto) y `RECEIPT_PASSKEY_ENABLED=true`.
+4. Reiniciar Flask y validar con un empleado y un recibo de pruebas.
+
+Para pruebas locales usar `WEBAUTHN_RP_ID=localhost` y
+`WEBAUTHN_ORIGIN=http://localhost:5000`, entrando exactamente por esa dirección.
+Un teléfono necesita una dirección HTTPS accesible desde él; su localhost apunta al propio
+teléfono. Usar el dominio definitivo antes de registrar claves destinadas a producción.
+
+Impacto del esquema: agrega `rrhh.recibo_credenciales`, `rrhh.recibo_desafios` y
+`rrhh.recibo_firmas`, con claves foráneas a usuarios y recibos. No altera datos ni columnas
+de tablas existentes. El primer registro de dispositivo exige la contraseña actual;
+no se admite reemplazar una clave desde el flujo de recibos. Recuperación por pérdida del
+dispositivo requiere un procedimiento de identidad a cargo de Sistemas; no hay un bypass
+de firma por contraseña. No se ofrecen mecanismos automáticos de recuperación todavía.
+
+Cada desafío dura tres minutos y está ligado a usuario, sesión, PDF, recibo y respuesta.
+La constancia y la respuesta se guardan juntas, con control de concurrencia en PostgreSQL.
+El endpoint antiguo de Flask y la API de respuesta en migración se bloquean cuando la
+función está activa. Los recibos respondidos previamente conservan su historial.
+
+Rollback: desactivar la variable y reiniciar restaura el flujo anterior; hacerlo requiere
+decisión operativa porque vuelve a permitir respuestas sin passkey. Conservar las tres
+tablas y sus constancias; no ejecutar un borrado de esquema para revertir la aplicación.
+Los respaldos deben incluir esas tablas y sus datos, con acceso restringido.
+
+La activación en la base corporativa y la prueba real con Face ID están pendientes.
+
 Los documentos de `backend/docs/migration/` registran la línea base, la paridad funcional y el plan de retiro de Flask. `AGENTS.md` contiene las reglas permanentes de trabajo y seguridad del repositorio.

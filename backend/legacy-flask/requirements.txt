@@ -11,3 +11,4 @@ openpyxl
 pandas
 email-validator
 pyodbc
+webauthn>=2.2,<3

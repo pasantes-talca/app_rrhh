@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from flask import Blueprint, render_template, redirect, url_for, flash, request, current_app, send_from_directory, abort
 from flask_login import login_required, current_user
+from flask_wtf.csrf import generate_csrf
 from sqlalchemy import case, func, or_
 from werkzeug.utils import secure_filename
 
@@ -14,6 +15,9 @@ from modules.notificaciones.services import notificar_empleado, notificar_rrhh
 from .forms import DocumentoForm, DocumentoEditarForm, DocumentoEmpleadoForm, ReciboSueldoForm
 
 documentos_bp = Blueprint('documentos', __name__, url_prefix='/documentos')
+
+from .passkeys import register_routes
+register_routes(documentos_bp)
 
 
 def check_admin_or_rrhh():
@@ -155,12 +159,20 @@ def ver_recibo(id):
     if es_titular and not recibo.visualizado_en:
         recibo.visualizado_en = datetime.utcnow()
         db.session.commit()
-    return render_template('documentos/ver_recibo.html', recibo=recibo, es_titular=es_titular)
+    from .passkey_models import ReceiptCredential, ReceiptSignature
+    enabled = current_app.config.get('RECEIPT_PASSKEY_ENABLED', False)
+    registered = enabled and ReceiptCredential.query.filter_by(usuario_id=current_user.id).first() is not None
+    signature = ReceiptSignature.query.filter_by(recibo_id=id).first() if enabled else None
+    return render_template('documentos/ver_recibo.html', recibo=recibo, es_titular=es_titular,
+                           passkey_enabled=enabled, passkey_registered=registered, passkey_signature=signature,
+                           receipt_csrf=generate_csrf())
 
 
 @documentos_bp.route('/recibos/<int:id>/responder', methods=['POST'])
 @login_required
 def responder_recibo(id):
+    if current_app.config.get('RECEIPT_PASSKEY_ENABLED'):
+        abort(403, description='Para responder este recibo debés verificar tu passkey.')
     recibo = ReciboSueldo.query.get_or_404(id)
     if not current_user.empleado or current_user.empleado.id != recibo.empleado_id:
         abort(403)
@@ -174,6 +186,14 @@ def responder_recibo(id):
     if respuesta == 'Disconforme' and not observacion:
         flash('Indicá el motivo de la disconformidad.', 'warning')
         return redirect(url_for('documentos.ver_recibo', id=id))
+    record_receipt_response(recibo, respuesta, observacion)
+    db.session.commit()
+    flash('Tu respuesta quedó registrada.', 'success')
+    return redirect(url_for('documentos.ver_recibo', id=id))
+
+
+def record_receipt_response(recibo, respuesta, observacion):
+    """Actualiza el recibo en la misma transacción que la constancia WebAuthn."""
     recibo.estado = respuesta
     recibo.respuesta = respuesta
     recibo.observacion_empleado = observacion or None
@@ -186,9 +206,6 @@ def responder_recibo(id):
         f'{recibo.empleado.nombre_apellido} respondió el recibo del período {recibo.periodo}.',
         'recibo', 'recibo_sueldo', recibo.id, excluir_usuario_id=current_user.id,
     )
-    db.session.commit()
-    flash('Tu respuesta quedó registrada.', 'success')
-    return redirect(url_for('documentos.ver_recibo', id=id))
 
 
 @documentos_bp.route('/')

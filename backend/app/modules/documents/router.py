@@ -1,4 +1,5 @@
 from datetime import datetime
+import os
 from hashlib import sha256
 from pathlib import Path
 
@@ -220,6 +221,8 @@ def mark_receipt_viewed(receipt_id: int, request: Request, principal: Principal 
 @router.post("/receipts/{receipt_id}/respond", response_model=ReceiptView)
 def respond_receipt(receipt_id: int, payload: ReceiptResponse, request: Request, principal: Principal = Depends(current_principal), session: Session = Depends(get_session)):
     verify_csrf(request)
+    if os.environ.get('RECEIPT_PASSKEY_ENABLED', 'false').lower() == 'true':
+        raise HTTPException(status_code=403, detail='receipt_passkey_required_use_stable_portal')
     item = session.get(PayrollReceipt, receipt_id)
     if item is None or principal.employee_id != item.employee_id: raise HTTPException(status_code=404, detail="receipt_not_found")
     if item.state != "Pendiente": raise HTTPException(status_code=409, detail="receipt_already_answered")
